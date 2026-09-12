@@ -1,0 +1,200 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - button "Abrir navegación" [ref=e4]
+    - link "OS Original Sneakers" [ref=e7] [cursor=pointer]:
+      - /url: /stock
+      - generic [ref=e8]: OS
+      - generic [ref=e9]: Original Sneakers
+    - generic [ref=e10]: Conectado
+  - main [ref=e12]:
+    - generic [ref=e13]:
+      - generic [ref=e15]:
+        - generic [ref=e16]:
+          - heading "Stock" [level=1] [ref=e17]
+          - paragraph [ref=e18]: Gestiona productos, tallas y unidades disponibles.
+        - generic [ref=e19]:
+          - link "Importar inventario" [ref=e20] [cursor=pointer]:
+            - /url: /anadir/excel
+          - link "Añadir artículo" [ref=e23] [cursor=pointer]:
+            - /url: /anadir
+      - region "Resumen de inventario" [ref=e26]:
+        - generic [ref=e27]:
+          - generic [ref=e28]:
+            - term [ref=e29]: Productos
+            - definition [ref=e30]: "387"
+            - paragraph [ref=e31]: 352 activos
+          - generic [ref=e32]:
+            - term [ref=e33]: Pares disponibles
+            - definition [ref=e34]: "526"
+            - paragraph [ref=e35]: En 2 ubicaciones
+          - generic [ref=e36]:
+            - term [ref=e37]: Sin stock
+            - definition [ref=e38]: "31"
+            - paragraph [ref=e39]: Reponer pronto
+          - generic [ref=e40]:
+            - term [ref=e41]: Valor de inventario
+            - definition [ref=e42]: 42.680 €
+            - paragraph [ref=e43]: A precio de coste
+      - region "Herramientas de stock" [ref=e44]:
+        - generic [ref=e45]:
+          - generic [ref=e46]:
+            - generic [ref=e47]: Buscar
+            - searchbox "Buscar" [ref=e48]
+          - button "Buscar" [ref=e49]
+        - button "Filtros 3" [ref=e51]:
+          - text: Filtros
+          - generic [ref=e54]: "3"
+      - region [ref=e55]:
+        - generic [ref=e56]:
+          - generic [ref=e57]:
+            - heading "Inventario" [level=2] [ref=e58]
+            - paragraph [ref=e59]: Datos de muestra para revisar la interfaz
+          - paragraph [ref=e60]: Ordenado por actualización
+        - generic [ref=e61]:
+          - article [ref=e62]:
+            - generic [ref=e63]:
+              - checkbox "Seleccionar Nike Dunk Low Panda" [ref=e65]
+              - link "Imagen de producto de muestra Nike Dunk Low Panda DD1391-100 Nike · Calzado" [ref=e66] [cursor=pointer]:
+                - /url: /stock/nike-dunk-low-panda
+                - img "Imagen de producto de muestra" [ref=e67]
+                - generic [ref=e71]:
+                  - generic [ref=e72]: Nike Dunk Low Panda
+                  - generic [ref=e73]: DD1391-100
+                  - generic [ref=e74]: Nike · Calzado
+              - group [ref=e75]:
+                - generic "Acciones para Nike Dunk Low Panda" [ref=e76] [cursor=pointer]
+            - generic [ref=e78]:
+              - generic [ref=e79]: "40"
+              - generic [ref=e80]: "41"
+              - generic [ref=e81]: "42"
+              - generic [ref=e82]: "43"
+              - generic [ref=e83]: "+1"
+            - generic [ref=e84]:
+              - generic [ref=e85]:
+                - paragraph [ref=e86]: 7 pares
+                - generic [ref=e87]: Disponible
+              - paragraph [ref=e91]: 119,90 €
+          - article [ref=e92]:
+            - generic [ref=e93]:
+              - checkbox "Seleccionar Nike Air Max SC" [ref=e95]
+              - link "Imagen de producto de muestra Nike Air Max SC CW4555-102 Nike · Calzado" [ref=e96] [cursor=pointer]:
+                - /url: /stock/nike-air-max-sc
+                - img "Imagen de producto de muestra" [ref=e97]
+                - generic [ref=e101]:
+                  - generic [ref=e102]: Nike Air Max SC
+                  - generic [ref=e103]: CW4555-102
+                  - generic [ref=e104]: Nike · Calzado
+              - group [ref=e105]:
+                - generic "Acciones para Nike Air Max SC" [ref=e106] [cursor=pointer]
+            - generic [ref=e108]:
+              - generic [ref=e109]: "39"
+              - generic [ref=e110]: "40"
+              - generic [ref=e111]: "41"
+              - generic [ref=e112]: "42"
+            - generic [ref=e113]:
+              - generic [ref=e114]:
+                - paragraph [ref=e115]: 4 pares
+                - generic [ref=e116]: Disponible
+              - paragraph [ref=e120]: 89,90 €
+          - article [ref=e121]:
+            - generic [ref=e122]:
+              - checkbox "Seleccionar Nike Zoom Vomero 5" [ref=e124]
+              - link "Imagen de producto de muestra Nike Zoom Vomero 5 FB8825-001 Nike · Calzado" [ref=e125] [cursor=pointer]:
+                - /url: /stock/nike-vomero-5
+                - img "Imagen de producto de muestra" [ref=e126]
+                - generic [ref=e130]:
+                  - generic [ref=e131]: Nike Zoom Vomero 5
+                  - generic [ref=e132]: FB8825-001
+                  - generic [ref=e133]: Nike · Calzado
+              - group [ref=e134]:
+                - generic "Acciones para Nike Zoom Vomero 5" [ref=e135] [cursor=pointer]
+            - generic [ref=e137]:
+              - generic [ref=e138]: "40"
+              - generic [ref=e139]: "41"
+              - generic [ref=e140]: "42.5"
+              - generic [ref=e141]: "44"
+            - generic [ref=e142]:
+              - generic [ref=e143]:
+                - paragraph [ref=e144]: 5 pares
+                - generic [ref=e145]: Revisión
+              - paragraph [ref=e149]: 159,90 €
+          - article [ref=e150]:
+            - generic [ref=e151]:
+              - checkbox "Seleccionar Jordan 1 Mid" [ref=e153]
+              - link "Imagen de producto de muestra Jordan 1 Mid DQ8426-106 Jordan · Calzado" [ref=e154] [cursor=pointer]:
+                - /url: /stock/jordan-1-mid
+                - img "Imagen de producto de muestra" [ref=e155]
+                - generic [ref=e159]:
+                  - generic [ref=e160]: Jordan 1 Mid
+                  - generic [ref=e161]: DQ8426-106
+                  - generic [ref=e162]: Jordan · Calzado
+              - group [ref=e163]:
+                - generic "Acciones para Jordan 1 Mid" [ref=e164] [cursor=pointer]
+            - generic [ref=e166]:
+              - generic [ref=e167]: "41"
+              - generic [ref=e168]: "42"
+              - generic [ref=e169]: "43"
+              - generic [ref=e170]: "44"
+            - generic [ref=e171]:
+              - generic [ref=e172]:
+                - paragraph [ref=e173]: 0 pares
+                - generic [ref=e174]: Sin stock
+              - paragraph [ref=e178]: 139,90 €
+          - article [ref=e179]:
+            - generic [ref=e180]:
+              - checkbox "Seleccionar Adidas Campus 00s" [ref=e182]
+              - link "Imagen de producto de muestra Adidas Campus 00s HQ8708 Adidas · Calzado" [ref=e183] [cursor=pointer]:
+                - /url: /stock/adidas-campus-00s
+                - img "Imagen de producto de muestra" [ref=e184]
+                - generic [ref=e188]:
+                  - generic [ref=e189]: Adidas Campus 00s
+                  - generic [ref=e190]: HQ8708
+                  - generic [ref=e191]: Adidas · Calzado
+              - group [ref=e192]:
+                - generic "Acciones para Adidas Campus 00s" [ref=e193] [cursor=pointer]
+            - generic [ref=e195]:
+              - generic [ref=e196]: "40"
+              - generic [ref=e197]: 40⅔
+              - generic [ref=e198]: "42"
+              - generic [ref=e199]: 42⅔
+              - generic [ref=e200]: "+1"
+            - generic [ref=e201]:
+              - generic [ref=e202]:
+                - paragraph [ref=e203]: 9 pares
+                - generic [ref=e204]: Disponible
+              - paragraph [ref=e208]: 109,90 €
+          - article [ref=e209]:
+            - generic [ref=e210]:
+              - checkbox "Seleccionar Adidas Grand Court 2.0" [ref=e212]
+              - link "Imagen de producto de muestra Adidas Grand Court 2.0 GW9195 Adidas · Calzado" [ref=e213] [cursor=pointer]:
+                - /url: /stock/adidas-grand-court
+                - img "Imagen de producto de muestra" [ref=e214]
+                - generic [ref=e218]:
+                  - generic [ref=e219]: Adidas Grand Court 2.0
+                  - generic [ref=e220]: GW9195
+                  - generic [ref=e221]: Adidas · Calzado
+              - group [ref=e222]:
+                - generic "Acciones para Adidas Grand Court 2.0" [ref=e223] [cursor=pointer]
+            - generic [ref=e225]:
+              - generic [ref=e226]: "38"
+              - generic [ref=e227]: 39⅓
+            - generic [ref=e228]:
+              - generic [ref=e229]:
+                - paragraph [ref=e230]: 0 pares
+                - generic [ref=e231]: Archivado
+              - paragraph [ref=e235]: 69,90 €
+        - generic [ref=e236]:
+          - generic [ref=e237]:
+            - generic [ref=e238]: 1–25 de 387
+            - generic [ref=e239]:
+              - generic [ref=e240]: Resultados por página
+              - combobox "Resultados por página" [ref=e241]:
+                - option "25 / página" [selected]
+                - option "50 / página"
+          - navigation "Paginación" [ref=e242]:
+            - button "Anterior" [disabled] [ref=e243]
+            - button "1" [ref=e244]
+            - button "2" [ref=e245]
+            - button "3" [ref=e246]
+            - generic [ref=e247]: …
+            - button "Siguiente" [ref=e248]

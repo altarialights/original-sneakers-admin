@@ -1,0 +1,264 @@
+- generic [active] [ref=f49e1]:
+  - generic [ref=f49e2]:
+    - banner [ref=f49e3]:
+      - button "Abrir navegación" [ref=f49e4]
+      - link "OS" [ref=f49e7] [cursor=pointer]:
+        - /url: /stock
+      - generic [ref=f49e9]: Conectado
+    - main [ref=f49e11]:
+      - generic [ref=f49e12]:
+        - generic [ref=f49e13]:
+          - link "← Contenido" [ref=f49e14] [cursor=pointer]:
+            - /url: /contenido
+          - generic [ref=f49e15]:
+            - generic [ref=f49e16]:
+              - heading "Crear contenido" [level=1] [ref=f49e17]
+              - paragraph [ref=f49e18]: Parte del producto existente y decide qué pieza necesitas.
+            - generic [ref=f49e19]:
+              - link "Salir" [ref=f49e20] [cursor=pointer]:
+                - /url: /contenido
+              - button "Guardar borrador" [disabled] [ref=f49e21]
+        - list "Progreso" [ref=f49e22]:
+          - listitem [ref=f49e23]:
+            - generic [ref=f49e24]: "1"
+            - text: Producto
+          - listitem [ref=f49e25]:
+            - generic [ref=f49e26]: "2"
+            - text: Material y tipo
+          - listitem [ref=f49e27]:
+            - generic [ref=f49e28]: "3"
+            - text: Revisar
+        - generic [ref=f49e29]:
+          - generic [ref=f49e31]:
+            - generic [ref=f49e32]:
+              - paragraph [ref=f49e33]: Paso 1
+              - heading "Selecciona el producto" [level=2] [ref=f49e34]
+              - generic [ref=f49e35]:
+                - generic [ref=f49e36]: Buscar producto
+                - searchbox "Buscar producto" [ref=f49e37]: Nike Dunk Low Panda
+            - generic [ref=f49e38]:
+              - img "Imagen de producto de muestra" [ref=f49e39]
+              - generic [ref=f49e43]:
+                - paragraph [ref=f49e44]: Nike Dunk Low Panda
+                - paragraph [ref=f49e45]: DD1391-100 · Nike · Black / White
+              - generic [ref=f49e46]: Seleccionado
+          - generic [ref=f49e49]:
+            - generic [ref=f49e50]:
+              - paragraph [ref=f49e51]: Paso 2
+              - heading "Material disponible" [level=2] [ref=f49e52]
+              - generic [ref=f49e53]:
+                - img "Imagen de producto de muestra" [ref=f49e55]
+                - img "Imagen de producto de muestra" [ref=f49e60]
+                - img "Imagen de producto de muestra" [ref=f49e65]
+                - button "+ Subir imágenes" [ref=f49e69]: + Subirimágenes
+              - generic [ref=f49e70]:
+                - paragraph [ref=f49e71]: Descripción actual
+                - paragraph [ref=f49e72]: Zapatilla urbana de perfil clásico con combinación en blanco y negro. Versátil para uso diario.
+                - paragraph [ref=f49e73]: Contenido Shopify · muestra
+            - generic [ref=f49e74]:
+              - paragraph [ref=f49e75]: Paso 3
+              - heading "¿Qué quieres crear?" [level=2] [ref=f49e76]
+              - generic [ref=f49e77]:
+                - button "Imágenes de producto" [ref=f49e78]
+                - button "Descripción" [ref=f49e79]
+                - button "Título" [ref=f49e80]
+                - button "SEO" [ref=f49e81]
+                - button "Publicación para redes" [ref=f49e82]
+                - button "Vídeo · Próximamente" [disabled] [ref=f49e83]
+          - generic [ref=f49e84]:
+            - generic [ref=f49e85]:
+              - generic [ref=f49e86]:
+                - paragraph [ref=f49e87]: Preparado para generación futura
+                - heading "Imágenes de producto" [level=2] [ref=f49e88]
+                - paragraph [ref=f49e89]: Configura el resultado antes de generar.
+              - generic [ref=f49e90]: Sin llamadas API
+            - generic [ref=f49e91]:
+              - generic [ref=f49e92]:
+                - group "Tipo" [ref=f49e93]:
+                  - generic [ref=f49e95]:
+                    - button "Foto premium" [ref=f49e96]
+                    - button "Lifestyle" [ref=f49e97]
+                    - button "Fondo limpio" [ref=f49e98]
+                    - button "Creativo redes" [ref=f49e99]
+                    - button "Banner web" [ref=f49e100]
+                - group "Formato" [ref=f49e101]:
+                  - generic [ref=f49e103]:
+                    - button "1:1" [ref=f49e104]
+                    - button "4:5" [ref=f49e105]
+                    - button "9:16" [ref=f49e106]
+                    - button "16:9" [ref=f49e107]
+                - group "Cantidad" [ref=f49e108]:
+                  - generic [ref=f49e110]:
+                    - button "1" [ref=f49e111]
+                    - button "2" [ref=f49e112]
+                    - button "4" [ref=f49e113]
+              - generic [ref=f49e114]:
+                - generic [ref=f49e115]:
+                  - generic [ref=f49e116]: Instrucciones adicionales
+                  - textbox "Instrucciones adicionales" [ref=f49e117]: Mantener exactamente el modelo y los colores originales.
+                - button "Generar imágenes" [disabled] [ref=f49e118]
+                - paragraph [ref=f49e119]: Se habilitará al conectar el servicio de imágenes.
+          - generic [ref=f49e120]:
+            - heading "Plantillas programáticas" [level=2] [ref=f49e121]
+            - paragraph [ref=f49e122]: Piezas rápidas y consistentes que no necesitan IA.
+            - generic [ref=f49e123]:
+              - generic [ref=f49e124]:
+                - generic [ref=f49e125]:
+                  - button "Producto limpio" [ref=f49e126]
+                  - button "Oferta" [ref=f49e127]
+                  - button "Nuevo stock" [ref=f49e128]
+                  - button "Últimas unidades" [ref=f49e129]
+                  - button "Story producto" [ref=f49e130]
+                - generic [ref=f49e132]:
+                  - img "Imagen de producto de muestra" [ref=f49e133]
+                  - paragraph [ref=f49e137]: Nike Dunk Low Panda
+                  - paragraph [ref=f49e138]: 119,90 €
+              - generic [ref=f49e139]:
+                - generic [ref=f49e140]:
+                  - generic [ref=f49e141]: Título
+                  - textbox "Título" [ref=f49e142]: Nike Dunk Low Panda
+                - generic [ref=f49e143]:
+                  - generic [ref=f49e144]: Precio
+                  - textbox "Precio" [ref=f49e145]: 119,90 €
+                - generic [ref=f49e146]:
+                  - generic [ref=f49e147]: Texto secundario
+                  - textbox "Texto secundario" [ref=f49e148]: Disponible ahora
+                - generic [ref=f49e149]:
+                  - generic [ref=f49e150]: CTA
+                  - textbox "CTA" [ref=f49e151]: Ver producto
+                - generic [ref=f49e152]:
+                  - checkbox "Mostrar logo" [checked] [ref=f49e153]
+                  - generic [ref=f49e154]: Mostrar logo
+          - generic [ref=f49e155]:
+            - generic [ref=f49e156]:
+              - heading "Generar descripción" [level=2] [ref=f49e157]
+              - generic [ref=f49e158]:
+                - group "Tono" [ref=f49e159]:
+                  - generic [ref=f49e161]:
+                    - button "Natural" [ref=f49e162]
+                    - button "Premium" [ref=f49e163]
+                    - button "Comercial" [ref=f49e164]
+                - group "Longitud" [ref=f49e165]:
+                  - generic [ref=f49e167]:
+                    - button "Corta" [ref=f49e168]
+                    - button "Media" [ref=f49e169]
+                    - button "Completa" [ref=f49e170]
+                - group "Canal" [ref=f49e171]:
+                  - generic [ref=f49e173]:
+                    - button "Web" [ref=f49e174]
+                    - button "Shopify" [ref=f49e175]
+                    - button "Vinted" [ref=f49e176]
+                    - button "Instagram" [ref=f49e177]
+              - button "Generar borrador" [disabled] [ref=f49e178]
+              - generic [ref=f49e179]:
+                - generic [ref=f49e180]:
+                  - heading "Resultado editable" [level=3] [ref=f49e181]
+                  - generic [ref=f49e182]: Borrador
+                - generic [ref=f49e185]:
+                  - generic [ref=f49e186]: Título
+                  - textbox "Título" [ref=f49e187]: Nike Dunk Low Panda
+                - generic [ref=f49e188]:
+                  - generic [ref=f49e189]: Descripción
+                  - textbox "Descripción" [ref=f49e190]: Una silueta imprescindible para el día a día, con materiales resistentes y una combinación fácil de llevar.
+                - generic [ref=f49e191]:
+                  - generic [ref=f49e192]:
+                    - generic [ref=f49e193]: SEO title
+                    - textbox "SEO title" [ref=f49e194]: Nike Dunk Low Panda | Original Sneakers
+                  - generic [ref=f49e195]:
+                    - generic [ref=f49e196]: SEO description
+                    - textbox "SEO description" [ref=f49e197]: Descubre disponibilidad y tallas.
+            - complementary [ref=f49e198]:
+              - heading "Versiones" [level=2] [ref=f49e199]
+              - list [ref=f49e200]:
+                - listitem [ref=f49e201]:
+                  - generic [ref=f49e202]:
+                    - paragraph [ref=f49e203]: Versión 3
+                    - generic [ref=f49e204]: Aprobada
+                  - paragraph [ref=f49e207]: Actual
+                  - button "Ver versión" [ref=f49e208]
+                - listitem [ref=f49e209]:
+                  - generic [ref=f49e210]:
+                    - paragraph [ref=f49e211]: Versión 2
+                    - generic [ref=f49e212]: Reemplazada
+                  - paragraph [ref=f49e215]: 12 ago
+                  - button "Ver versión" [ref=f49e216]
+                - listitem [ref=f49e217]:
+                  - generic [ref=f49e218]:
+                    - paragraph [ref=f49e219]: Versión 1
+                    - generic [ref=f49e220]: Reemplazada
+                  - paragraph [ref=f49e223]: 4 ago
+                  - button "Ver versión" [ref=f49e224]
+          - generic [ref=f49e225]:
+            - generic [ref=f49e226]:
+              - generic [ref=f49e227]:
+                - heading "Assets" [level=2] [ref=f49e228]
+                - paragraph [ref=f49e229]: Originales, importados y versiones generadas.
+              - button "Subir" [ref=f49e230]
+            - generic [ref=f49e231]:
+              - article [ref=f49e232]:
+                - img "Imagen de producto de muestra" [ref=f49e233]
+                - generic [ref=f49e237]:
+                  - generic [ref=f49e238]:
+                    - generic [ref=f49e239]:
+                      - heading "Vista lateral" [level=3] [ref=f49e240]
+                      - paragraph [ref=f49e241]: Original
+                    - generic [ref=f49e242]: Aprobado
+                  - generic [ref=f49e245]:
+                    - button "Ver" [ref=f49e246]
+                    - button "Usar" [ref=f49e247]
+                    - button "Archivar" [ref=f49e248]
+              - article [ref=f49e249]:
+                - img "Imagen de producto de muestra" [ref=f49e250]
+                - generic [ref=f49e254]:
+                  - generic [ref=f49e255]:
+                    - generic [ref=f49e256]:
+                      - heading "Detalle trasero" [level=3] [ref=f49e257]
+                      - paragraph [ref=f49e258]: Importado
+                    - generic [ref=f49e259]: Aprobado
+                  - generic [ref=f49e262]:
+                    - button "Ver" [ref=f49e263]
+                    - button "Usar" [ref=f49e264]
+                    - button "Archivar" [ref=f49e265]
+              - article [ref=f49e266]:
+                - img "Imagen de producto de muestra" [ref=f49e267]
+                - generic [ref=f49e271]:
+                  - generic [ref=f49e272]:
+                    - generic [ref=f49e273]:
+                      - heading "Post cuadrado" [level=3] [ref=f49e274]
+                      - paragraph [ref=f49e275]: Generado IA
+                    - generic [ref=f49e276]: Revisión
+                  - generic [ref=f49e279]:
+                    - button "Ver" [ref=f49e280]
+                    - button "Usar" [ref=f49e281]
+                    - button "Archivar" [ref=f49e282]
+              - article [ref=f49e283]:
+                - img "Imagen de producto de muestra" [ref=f49e284]
+                - generic [ref=f49e288]:
+                  - generic [ref=f49e289]:
+                    - generic [ref=f49e290]:
+                      - heading "Story producto" [level=3] [ref=f49e291]
+                      - paragraph [ref=f49e292]: Manual
+                    - generic [ref=f49e293]: Borrador
+                  - generic [ref=f49e296]:
+                    - button "Ver" [ref=f49e297]
+                    - button "Usar" [ref=f49e298]
+                    - button "Archivar" [ref=f49e299]
+    - navigation "Navegación móvil" [ref=f49e300]:
+      - list [ref=f49e301]:
+        - listitem [ref=f49e302]:
+          - link "Stock" [ref=f49e303] [cursor=pointer]:
+            - /url: /stock
+        - listitem [ref=f49e307]:
+          - link "Añadir" [ref=f49e308] [cursor=pointer]:
+            - /url: /anadir
+        - listitem [ref=f49e312]:
+          - link "Contenido" [ref=f49e313] [cursor=pointer]:
+            - /url: /contenido
+        - listitem [ref=f49e317]:
+          - link "Más" [ref=f49e318] [cursor=pointer]:
+            - /url: /ajustes
+  - generic [ref=f49e324]:
+    - button [ref=f49e325]
+    - button [ref=f49e331]
+    - button [ref=f49e335]
+    - button [ref=f49e340]

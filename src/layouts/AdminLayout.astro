@@ -1,0 +1,32 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import AppSidebar from '../components/layout/AppSidebar.astro';
+import MobileNav from '../components/layout/MobileNav.astro';
+
+interface Props { title: string; description?: string; }
+const { title, description } = Astro.props;
+const currentPath = Astro.url.pathname;
+---
+
+<BaseLayout title={`${title} · Original Sneakers`} description={description}>
+  <div class="min-h-screen bg-canvas text-slate-950">
+    <div class="fixed inset-y-0 left-0 z-30 hidden lg:block">
+      <AppSidebar currentPath={currentPath} />
+    </div>
+
+    <header class="sticky top-0 z-20 flex h-15 items-center border-b border-slate-200 bg-white px-4 lg:hidden">
+      <a href="/stock" class="flex min-h-11 items-center gap-2 rounded-xl font-semibold focus-visible:outline-2 focus-visible:outline-blue-600">
+        <span class="grid size-8 place-items-center rounded-lg bg-slate-950 text-[11px] font-bold text-white">OS</span>
+        <span class="text-sm">Original Sneakers</span>
+      </a>
+      <span class="ml-auto rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-500">Vista demo</span>
+    </header>
+
+    <main class="min-h-screen pb-24 lg:ml-60 lg:pb-10">
+      <div class="mx-auto w-full max-w-[1320px] px-4 py-6 sm:px-6 lg:px-8 lg:py-9 xl:px-10">
+        <slot />
+      </div>
+    </main>
+    <MobileNav currentPath={currentPath} />
+  </div>
+</BaseLayout>

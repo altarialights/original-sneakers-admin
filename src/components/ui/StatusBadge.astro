@@ -1,0 +1,21 @@
+---
+interface Props { status: string; compact?: boolean; }
+const { status, compact = false } = Astro.props;
+const normalized = status.toLowerCase();
+const tone =
+  normalized.includes('no publicado') ? 'neutral' :
+  ['disponible', 'publicado', 'confirmado', 'correcta'].some((value) => normalized.includes(value)) ? 'success' :
+  ['sin stock', 'de baja', 'eliminar'].some((value) => normalized.includes(value)) ? 'danger' :
+  ['revisar', 'desactualizado', 'pendiente', 'repetir'].some((value) => normalized.includes(value)) ? 'warning' : 'neutral';
+const styles = {
+  success: 'bg-emerald-50 text-emerald-700 ring-emerald-600/15',
+  danger: 'bg-rose-50 text-rose-700 ring-rose-600/15',
+  warning: 'bg-amber-50 text-amber-800 ring-amber-600/20',
+  neutral: 'bg-slate-100 text-slate-600 ring-slate-500/10'
+};
+const dots = { success: 'bg-emerald-500', danger: 'bg-rose-500', warning: 'bg-amber-500', neutral: 'bg-slate-400' };
+---
+
+<span class:list={['inline-flex max-w-full items-center gap-1.5 rounded-full font-semibold ring-1 ring-inset', compact ? 'px-2 py-1 text-[11px]' : 'px-2.5 py-1.5 text-xs', styles[tone]]}>
+  <span class:list={['size-1.5 shrink-0 rounded-full', dots[tone]]}></span><span class="truncate">{status}</span>
+</span>

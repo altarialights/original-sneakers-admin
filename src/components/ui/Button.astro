@@ -1,0 +1,22 @@
+---
+import Icon, { type IconName } from './Icon.astro';
+interface Props {
+  href?: string;
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
+  icon?: IconName;
+  type?: 'button' | 'submit';
+  disabled?: boolean;
+  class?: string;
+  dataDialogOpen?: string;
+}
+const { href, variant = 'secondary', icon, type = 'button', disabled = false, class: className, dataDialogOpen } = Astro.props;
+const styles = {
+  primary: 'bg-slate-950 text-white hover:bg-slate-800 shadow-sm',
+  secondary: 'border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 shadow-sm',
+  ghost: 'text-slate-600 hover:bg-slate-100 hover:text-slate-950',
+  danger: 'bg-rose-600 text-white hover:bg-rose-700 shadow-sm'
+};
+const classes = ['inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:opacity-45', styles[variant], className];
+---
+
+{href ? <a href={href} class:list={classes} aria-disabled={disabled ? 'true' : undefined}>{icon && <Icon name={icon} class="size-[18px]" />}<slot /></a> : <button type={type} disabled={disabled} class:list={classes} data-dialog-open={dataDialogOpen}>{icon && <Icon name={icon} class="size-[18px]" />}<slot /></button>}

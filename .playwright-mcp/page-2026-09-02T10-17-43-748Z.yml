@@ -1,0 +1,136 @@
+- generic [active] [ref=f109e1]:
+  - generic [ref=f109e2]:
+    - banner [ref=f109e3]:
+      - button "Abrir navegación" [ref=f109e4]
+      - link "OS" [ref=f109e7] [cursor=pointer]:
+        - /url: /stock
+      - generic [ref=f109e9]: Conectado
+    - main [ref=f109e11]:
+      - generic [ref=f109e12]:
+        - generic [ref=f109e13]:
+          - link "← Formas de añadir" [ref=f109e14] [cursor=pointer]:
+            - /url: /anadir
+          - generic [ref=f109e16]:
+            - heading "Inventario por voz" [level=1] [ref=f109e17]
+            - paragraph [ref=f109e18]: Dicta productos y revisa solamente las dudas.
+        - generic [ref=f109e19]:
+          - complementary [ref=f109e20]:
+            - heading "Valores por defecto" [level=2] [ref=f109e21]
+            - paragraph [ref=f109e22]: No tendrás que repetirlos al dictar.
+            - generic [ref=f109e23]:
+              - generic [ref=f109e24]:
+                - generic [ref=f109e25]: Tipo
+                - combobox "Tipo" [ref=f109e26]:
+                  - option "Calzado" [selected]
+              - generic [ref=f109e27]:
+                - generic [ref=f109e28]: Sistema de talla
+                - combobox "Sistema de talla" [ref=f109e29]:
+                  - option "EU" [selected]
+              - generic [ref=f109e30]:
+                - generic [ref=f109e31]: Ubicación
+                - combobox "Ubicación" [ref=f109e32]:
+                  - option "Tienda" [selected]
+              - generic [ref=f109e33]:
+                - generic [ref=f109e34]: Moneda
+                - combobox "Moneda" [ref=f109e35]:
+                  - option "EUR" [selected]
+              - generic [ref=f109e36]:
+                - generic [ref=f109e37]: Marca
+                - combobox "Marca" [ref=f109e38]:
+                  - option "Sin definir" [selected]
+          - generic [ref=f109e39]:
+            - generic [ref=f109e40]:
+              - paragraph [ref=f109e41]: Demostración visual
+              - generic [ref=f109e45]:
+                - heading "Listo para empezar" [level=2] [ref=f109e46]
+                - paragraph [ref=f109e47]: Habla con naturalidad. Podrás revisar cada dato antes de guardar.
+                - button "Empezar a grabar" [ref=f109e48]
+              - paragraph [ref=f109e49]: El micrófono no se activa en esta versión.
+            - complementary [ref=f109e50]:
+              - paragraph [ref=f109e51]: Puedes decir
+              - blockquote [ref=f109e52]: “Nike Dunk Low Panda, referencia DD1391-100. Talla 40 una, 41 dos, 42 una. Precio 120. Coste 72.”
+        - region [ref=f109e53]:
+          - generic [ref=f109e54]:
+            - generic [ref=f109e55]:
+              - paragraph [ref=f109e56]: Audio procesado · muestra
+              - heading "Resultado preparado para revisión" [level=2] [ref=f109e57]
+            - button "Confirmar inventario" [disabled] [ref=f109e58]
+          - generic [ref=f109e59]:
+            - generic [ref=f109e60]:
+              - term [ref=f109e61]: Productos
+              - definition [ref=f109e62]: "37"
+            - generic [ref=f109e63]:
+              - term [ref=f109e64]: Variantes
+              - definition [ref=f109e65]: "84"
+            - generic [ref=f109e66]:
+              - term [ref=f109e67]: Pares
+              - definition [ref=f109e68]: "102"
+            - generic [ref=f109e69]:
+              - term [ref=f109e70]: Correctos
+              - definition [ref=f109e71]: "72"
+            - generic [ref=f109e72]:
+              - term [ref=f109e73]: Revisar
+              - definition [ref=f109e74]: "12"
+          - generic [ref=f109e75]:
+            - article [ref=f109e76]:
+              - generic [ref=f109e77]:
+                - generic [ref=f109e78]:
+                  - heading "Nike Dunk Low Panda" [level=3] [ref=f109e79]
+                  - paragraph [ref=f109e80]: DD1391-100
+                - generic [ref=f109e81]: Todo correcto
+              - generic [ref=f109e84]:
+                - generic [ref=f109e85]:
+                  - paragraph [ref=f109e86]: Talla
+                  - paragraph [ref=f109e87]: 40 ×1
+                - generic [ref=f109e88]:
+                  - paragraph [ref=f109e89]: Talla
+                  - paragraph [ref=f109e90]: 41 ×2
+                - generic [ref=f109e91]:
+                  - paragraph [ref=f109e92]: Talla
+                  - paragraph [ref=f109e93]: 42 ×1
+              - generic [ref=f109e94]:
+                - generic [ref=f109e95]:
+                  - term [ref=f109e96]: PVP
+                  - definition [ref=f109e97]: 120 €
+                - generic [ref=f109e98]:
+                  - term [ref=f109e99]: Coste
+                  - definition [ref=f109e100]: 72 €
+            - generic [ref=f109e101]:
+              - article [ref=f109e102]:
+                - generic [ref=f109e107]:
+                  - heading "No estoy seguro de esta talla" [level=3] [ref=f109e108]
+                  - paragraph [ref=f109e109]: Audio entendido
+                  - blockquote [ref=f109e110]: “cuarenta y dos y dos tercios”
+                  - generic [ref=f109e111]:
+                    - text: Propuesta
+                    - textbox "Propuesta detectada" [ref=f109e112]: 42⅔
+                  - generic [ref=f109e113]:
+                    - button "Confirmar" [ref=f109e114]
+                    - button "Editar" [ref=f109e115]
+              - article [ref=f109e116]:
+                - generic [ref=f109e121]:
+                  - heading "Referencia no detectada" [level=3] [ref=f109e122]
+                  - paragraph [ref=f109e123]: Nike Air Max 95 Black
+                  - generic [ref=f109e124]:
+                    - button "Confirmar" [ref=f109e125]
+                    - button "Editar" [ref=f109e126]
+          - paragraph [ref=f109e127]: No se ha grabado, transcrito ni procesado audio real.
+    - navigation "Navegación móvil" [ref=f109e128]:
+      - list [ref=f109e129]:
+        - listitem [ref=f109e130]:
+          - link "Stock" [ref=f109e131] [cursor=pointer]:
+            - /url: /stock
+        - listitem [ref=f109e135]:
+          - link "Añadir" [ref=f109e136] [cursor=pointer]:
+            - /url: /anadir
+        - listitem [ref=f109e140]:
+          - link "Contenido" [ref=f109e141] [cursor=pointer]:
+            - /url: /contenido
+        - listitem [ref=f109e145]:
+          - link "Más" [ref=f109e146] [cursor=pointer]:
+            - /url: /ajustes
+  - generic [ref=f109e152]:
+    - button [ref=f109e153]
+    - button [ref=f109e159]
+    - button [ref=f109e163]
+    - button [ref=f109e168]

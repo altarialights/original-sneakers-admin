@@ -1,0 +1,124 @@
+- generic [active] [ref=f111e1]:
+  - generic [ref=f111e2]:
+    - banner [ref=f111e3]:
+      - button "Abrir navegación" [ref=f111e4]
+      - link "OS" [ref=f111e7] [cursor=pointer]:
+        - /url: /stock
+      - generic [ref=f111e9]: Conectado
+    - main [ref=f111e11]:
+      - generic [ref=f111e12]:
+        - generic [ref=f111e13]:
+          - link "← Formas de añadir" [ref=f111e14] [cursor=pointer]:
+            - /url: /anadir
+          - generic [ref=f111e16]:
+            - heading "Inventario por voz" [level=1] [ref=f111e17]
+            - paragraph [ref=f111e18]: Dicta productos y revisa solamente las dudas.
+        - generic [ref=f111e19]:
+          - complementary [ref=f111e20]:
+            - heading "Valores por defecto" [level=2] [ref=f111e21]
+            - paragraph [ref=f111e22]: No tendrás que repetirlos al dictar.
+            - group [ref=f111e23]:
+              - generic "Calzado · EU · Tienda · EUR Editar" [ref=f111e24] [cursor=pointer]:
+                - generic [ref=f111e25]: Calzado · EU · Tienda · EUR
+                - generic [ref=f111e26]: Editar
+              - option "Calzado" [selected]
+              - option "EU" [selected]
+              - option "Tienda" [selected]
+              - option "EUR" [selected]
+              - option "Sin definir" [selected]
+          - generic [ref=f111e27]:
+            - generic [ref=f111e28]:
+              - paragraph [ref=f111e29]: Demostración visual
+              - generic [ref=f111e33]:
+                - heading "Listo para empezar" [level=2] [ref=f111e34]
+                - paragraph [ref=f111e35]: Habla con naturalidad. Podrás revisar cada dato antes de guardar.
+                - button "Empezar a grabar" [ref=f111e36]
+              - paragraph [ref=f111e37]: El micrófono no se activa en esta versión.
+            - complementary [ref=f111e38]:
+              - paragraph [ref=f111e39]: Puedes decir
+              - blockquote [ref=f111e40]: “Nike Dunk Low Panda, referencia DD1391-100. Talla 40 una, 41 dos, 42 una. Precio 120. Coste 72.”
+        - region [ref=f111e41]:
+          - generic [ref=f111e42]:
+            - generic [ref=f111e43]:
+              - paragraph [ref=f111e44]: Audio procesado · muestra
+              - heading "Resultado preparado para revisión" [level=2] [ref=f111e45]
+            - button "Confirmar inventario" [disabled] [ref=f111e46]
+          - generic [ref=f111e47]:
+            - generic [ref=f111e48]:
+              - term [ref=f111e49]: Productos
+              - definition [ref=f111e50]: "37"
+            - generic [ref=f111e51]:
+              - term [ref=f111e52]: Variantes
+              - definition [ref=f111e53]: "84"
+            - generic [ref=f111e54]:
+              - term [ref=f111e55]: Pares
+              - definition [ref=f111e56]: "102"
+            - generic [ref=f111e57]:
+              - term [ref=f111e58]: Correctos
+              - definition [ref=f111e59]: "72"
+            - generic [ref=f111e60]:
+              - term [ref=f111e61]: Revisar
+              - definition [ref=f111e62]: "12"
+          - generic [ref=f111e63]:
+            - article [ref=f111e64]:
+              - generic [ref=f111e65]:
+                - generic [ref=f111e66]:
+                  - heading "Nike Dunk Low Panda" [level=3] [ref=f111e67]
+                  - paragraph [ref=f111e68]: DD1391-100
+                - generic [ref=f111e69]: Todo correcto
+              - generic [ref=f111e72]:
+                - generic [ref=f111e73]:
+                  - paragraph [ref=f111e74]: Talla
+                  - paragraph [ref=f111e75]: 40 ×1
+                - generic [ref=f111e76]:
+                  - paragraph [ref=f111e77]: Talla
+                  - paragraph [ref=f111e78]: 41 ×2
+                - generic [ref=f111e79]:
+                  - paragraph [ref=f111e80]: Talla
+                  - paragraph [ref=f111e81]: 42 ×1
+              - generic [ref=f111e82]:
+                - generic [ref=f111e83]:
+                  - term [ref=f111e84]: PVP
+                  - definition [ref=f111e85]: 120 €
+                - generic [ref=f111e86]:
+                  - term [ref=f111e87]: Coste
+                  - definition [ref=f111e88]: 72 €
+            - generic [ref=f111e89]:
+              - article [ref=f111e90]:
+                - generic [ref=f111e95]:
+                  - heading "No estoy seguro de esta talla" [level=3] [ref=f111e96]
+                  - paragraph [ref=f111e97]: Audio entendido
+                  - blockquote [ref=f111e98]: “cuarenta y dos y dos tercios”
+                  - generic [ref=f111e99]:
+                    - text: Propuesta
+                    - textbox "Propuesta detectada" [ref=f111e100]: 42⅔
+                  - generic [ref=f111e101]:
+                    - button "Confirmar" [ref=f111e102]
+                    - button "Editar" [ref=f111e103]
+              - article [ref=f111e104]:
+                - generic [ref=f111e109]:
+                  - heading "Referencia no detectada" [level=3] [ref=f111e110]
+                  - paragraph [ref=f111e111]: Nike Air Max 95 Black
+                  - generic [ref=f111e112]:
+                    - button "Confirmar" [ref=f111e113]
+                    - button "Editar" [ref=f111e114]
+          - paragraph [ref=f111e115]: No se ha grabado, transcrito ni procesado audio real.
+    - navigation "Navegación móvil" [ref=f111e116]:
+      - list [ref=f111e117]:
+        - listitem [ref=f111e118]:
+          - link "Stock" [ref=f111e119] [cursor=pointer]:
+            - /url: /stock
+        - listitem [ref=f111e123]:
+          - link "Añadir" [ref=f111e124] [cursor=pointer]:
+            - /url: /anadir
+        - listitem [ref=f111e128]:
+          - link "Contenido" [ref=f111e129] [cursor=pointer]:
+            - /url: /contenido
+        - listitem [ref=f111e133]:
+          - link "Más" [ref=f111e134] [cursor=pointer]:
+            - /url: /ajustes
+  - generic [ref=f111e140]:
+    - button [ref=f111e141]
+    - button [ref=f111e147]
+    - button [ref=f111e151]
+    - button [ref=f111e159]

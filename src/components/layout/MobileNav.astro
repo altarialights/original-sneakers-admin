@@ -1,0 +1,25 @@
+---
+import Icon, { type IconName } from '../ui/Icon.astro';
+interface Props { currentPath: string; }
+const { currentPath } = Astro.props;
+const links: { href: string; label: string; icon: IconName; featured?: boolean }[] = [
+  { href: '/stock', label: 'Stock', icon: 'stock' },
+  { href: '/anadir', label: 'Añadir', icon: 'plus', featured: true },
+  { href: '/contenido', label: 'Contenido', icon: 'content' }
+];
+---
+
+<nav class="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white px-4 pb-[max(.5rem,env(safe-area-inset-bottom))] pt-1.5 lg:hidden" aria-label="Navegación móvil">
+  <ul class="mx-auto grid max-w-sm grid-cols-3">
+    {links.map((link) => {
+      const isActive = currentPath.startsWith(link.href);
+      return <li><a href={link.href} aria-current={isActive ? 'page' : undefined} class:list={[
+        'flex min-h-13 flex-col items-center justify-center gap-0.5 rounded-xl text-[11px] font-semibold',
+        link.featured ? 'text-slate-950' : isActive ? 'text-slate-950' : 'text-slate-400'
+      ]}>
+        <span class:list={['grid size-7 place-items-center rounded-lg', link.featured ? 'bg-slate-950 text-white' : '']}><Icon name={link.icon} class="size-[18px]" /></span>
+        <span>{link.label}</span>
+      </a></li>;
+    })}
+  </ul>
+</nav>

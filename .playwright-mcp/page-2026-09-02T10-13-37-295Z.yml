@@ -1,0 +1,215 @@
+- generic [active] [ref=f50e1]:
+  - generic [ref=f50e2]:
+    - banner [ref=f50e3]:
+      - button "Abrir navegación" [ref=f50e4]
+      - link "OS" [ref=f50e7] [cursor=pointer]:
+        - /url: /stock
+      - generic [ref=f50e9]: Conectado
+    - main [ref=f50e11]:
+      - generic [ref=f50e12]:
+        - generic [ref=f50e14]:
+          - generic [ref=f50e15]:
+            - heading "Stock" [level=1] [ref=f50e16]
+            - paragraph [ref=f50e17]: Gestiona productos, tallas y unidades disponibles.
+          - generic [ref=f50e18]:
+            - link "Importar inventario" [ref=f50e19] [cursor=pointer]:
+              - /url: /anadir/excel
+            - link "Añadir artículo" [ref=f50e22] [cursor=pointer]:
+              - /url: /anadir
+        - region "Resumen de inventario" [ref=f50e25]:
+          - generic [ref=f50e26]:
+            - generic [ref=f50e27]:
+              - term [ref=f50e28]: Productos
+              - definition [ref=f50e29]: "387"
+              - paragraph [ref=f50e30]: 352 activos
+            - generic [ref=f50e31]:
+              - term [ref=f50e32]: Pares disponibles
+              - definition [ref=f50e33]: "526"
+              - paragraph [ref=f50e34]: En 2 ubicaciones
+            - generic [ref=f50e35]:
+              - term [ref=f50e36]: Sin stock
+              - definition [ref=f50e37]: "31"
+              - paragraph [ref=f50e38]: Reponer pronto
+            - generic [ref=f50e39]:
+              - term [ref=f50e40]: Valor de inventario
+              - definition [ref=f50e41]: 42.680 €
+              - paragraph [ref=f50e42]: A precio de coste
+        - region "Herramientas de stock" [ref=f50e43]:
+          - generic [ref=f50e44]:
+            - generic [ref=f50e45]:
+              - generic [ref=f50e46]: Buscar
+              - searchbox "Buscar" [ref=f50e47]
+            - button "Buscar" [ref=f50e48]
+          - button "Filtros 3" [ref=f50e50]:
+            - text: Filtros
+            - generic [ref=f50e53]: "3"
+        - region [ref=f50e54]:
+          - generic [ref=f50e55]:
+            - generic [ref=f50e56]:
+              - heading "Inventario" [level=2] [ref=f50e57]
+              - paragraph [ref=f50e58]: Datos de muestra para revisar la interfaz
+            - paragraph [ref=f50e59]: Ordenado por actualización
+          - generic [ref=f50e60]:
+            - article [ref=f50e61]:
+              - generic [ref=f50e62]:
+                - checkbox "Seleccionar Nike Dunk Low Panda" [ref=f50e64]
+                - link "Imagen de producto de muestra Nike Dunk Low Panda DD1391-100 Nike · Calzado" [ref=f50e65] [cursor=pointer]:
+                  - /url: /stock/nike-dunk-low-panda
+                  - img "Imagen de producto de muestra" [ref=f50e66]
+                  - generic [ref=f50e70]:
+                    - generic [ref=f50e71]: Nike Dunk Low Panda
+                    - generic [ref=f50e72]: DD1391-100
+                    - generic [ref=f50e73]: Nike · Calzado
+                - group [ref=f50e74]:
+                  - generic "Acciones para Nike Dunk Low Panda" [ref=f50e75] [cursor=pointer]
+              - generic [ref=f50e77]:
+                - generic [ref=f50e78]: "40"
+                - generic [ref=f50e79]: "41"
+                - generic [ref=f50e80]: "42"
+                - generic [ref=f50e81]: "43"
+                - generic [ref=f50e82]: "+1"
+              - generic [ref=f50e83]:
+                - generic [ref=f50e84]:
+                  - paragraph [ref=f50e85]: 7 pares
+                  - generic [ref=f50e86]: Disponible
+                - paragraph [ref=f50e90]: 119,90 €
+            - article [ref=f50e91]:
+              - generic [ref=f50e92]:
+                - checkbox "Seleccionar Nike Air Max SC" [ref=f50e94]
+                - link "Imagen de producto de muestra Nike Air Max SC CW4555-102 Nike · Calzado" [ref=f50e95] [cursor=pointer]:
+                  - /url: /stock/nike-air-max-sc
+                  - img "Imagen de producto de muestra" [ref=f50e96]
+                  - generic [ref=f50e100]:
+                    - generic [ref=f50e101]: Nike Air Max SC
+                    - generic [ref=f50e102]: CW4555-102
+                    - generic [ref=f50e103]: Nike · Calzado
+                - group [ref=f50e104]:
+                  - generic "Acciones para Nike Air Max SC" [ref=f50e105] [cursor=pointer]
+              - generic [ref=f50e107]:
+                - generic [ref=f50e108]: "39"
+                - generic [ref=f50e109]: "40"
+                - generic [ref=f50e110]: "41"
+                - generic [ref=f50e111]: "42"
+              - generic [ref=f50e112]:
+                - generic [ref=f50e113]:
+                  - paragraph [ref=f50e114]: 4 pares
+                  - generic [ref=f50e115]: Disponible
+                - paragraph [ref=f50e119]: 89,90 €
+            - article [ref=f50e120]:
+              - generic [ref=f50e121]:
+                - checkbox "Seleccionar Nike Zoom Vomero 5" [ref=f50e123]
+                - link "Imagen de producto de muestra Nike Zoom Vomero 5 FB8825-001 Nike · Calzado" [ref=f50e124] [cursor=pointer]:
+                  - /url: /stock/nike-vomero-5
+                  - img "Imagen de producto de muestra" [ref=f50e125]
+                  - generic [ref=f50e129]:
+                    - generic [ref=f50e130]: Nike Zoom Vomero 5
+                    - generic [ref=f50e131]: FB8825-001
+                    - generic [ref=f50e132]: Nike · Calzado
+                - group [ref=f50e133]:
+                  - generic "Acciones para Nike Zoom Vomero 5" [ref=f50e134] [cursor=pointer]
+              - generic [ref=f50e136]:
+                - generic [ref=f50e137]: "40"
+                - generic [ref=f50e138]: "41"
+                - generic [ref=f50e139]: "42.5"
+                - generic [ref=f50e140]: "44"
+              - generic [ref=f50e141]:
+                - generic [ref=f50e142]:
+                  - paragraph [ref=f50e143]: 5 pares
+                  - generic [ref=f50e144]: Revisión
+                - paragraph [ref=f50e148]: 159,90 €
+            - article [ref=f50e149]:
+              - generic [ref=f50e150]:
+                - checkbox "Seleccionar Jordan 1 Mid" [ref=f50e152]
+                - link "Imagen de producto de muestra Jordan 1 Mid DQ8426-106 Jordan · Calzado" [ref=f50e153] [cursor=pointer]:
+                  - /url: /stock/jordan-1-mid
+                  - img "Imagen de producto de muestra" [ref=f50e154]
+                  - generic [ref=f50e158]:
+                    - generic [ref=f50e159]: Jordan 1 Mid
+                    - generic [ref=f50e160]: DQ8426-106
+                    - generic [ref=f50e161]: Jordan · Calzado
+                - group [ref=f50e162]:
+                  - generic "Acciones para Jordan 1 Mid" [ref=f50e163] [cursor=pointer]
+              - generic [ref=f50e165]:
+                - generic [ref=f50e166]: "41"
+                - generic [ref=f50e167]: "42"
+                - generic [ref=f50e168]: "43"
+                - generic [ref=f50e169]: "44"
+              - generic [ref=f50e170]:
+                - generic [ref=f50e171]:
+                  - paragraph [ref=f50e172]: 0 pares
+                  - generic [ref=f50e173]: Sin stock
+                - paragraph [ref=f50e177]: 139,90 €
+            - article [ref=f50e178]:
+              - generic [ref=f50e179]:
+                - checkbox "Seleccionar Adidas Campus 00s" [ref=f50e181]
+                - link "Imagen de producto de muestra Adidas Campus 00s HQ8708 Adidas · Calzado" [ref=f50e182] [cursor=pointer]:
+                  - /url: /stock/adidas-campus-00s
+                  - img "Imagen de producto de muestra" [ref=f50e183]
+                  - generic [ref=f50e187]:
+                    - generic [ref=f50e188]: Adidas Campus 00s
+                    - generic [ref=f50e189]: HQ8708
+                    - generic [ref=f50e190]: Adidas · Calzado
+                - group [ref=f50e191]:
+                  - generic "Acciones para Adidas Campus 00s" [ref=f50e192] [cursor=pointer]
+              - generic [ref=f50e194]:
+                - generic [ref=f50e195]: "40"
+                - generic [ref=f50e196]: 40⅔
+                - generic [ref=f50e197]: "42"
+                - generic [ref=f50e198]: 42⅔
+                - generic [ref=f50e199]: "+1"
+              - generic [ref=f50e200]:
+                - generic [ref=f50e201]:
+                  - paragraph [ref=f50e202]: 9 pares
+                  - generic [ref=f50e203]: Disponible
+                - paragraph [ref=f50e207]: 109,90 €
+            - article [ref=f50e208]:
+              - generic [ref=f50e209]:
+                - checkbox "Seleccionar Adidas Grand Court 2.0" [ref=f50e211]
+                - link "Imagen de producto de muestra Adidas Grand Court 2.0 GW9195 Adidas · Calzado" [ref=f50e212] [cursor=pointer]:
+                  - /url: /stock/adidas-grand-court
+                  - img "Imagen de producto de muestra" [ref=f50e213]
+                  - generic [ref=f50e217]:
+                    - generic [ref=f50e218]: Adidas Grand Court 2.0
+                    - generic [ref=f50e219]: GW9195
+                    - generic [ref=f50e220]: Adidas · Calzado
+                - group [ref=f50e221]:
+                  - generic "Acciones para Adidas Grand Court 2.0" [ref=f50e222] [cursor=pointer]
+              - generic [ref=f50e224]:
+                - generic [ref=f50e225]: "38"
+                - generic [ref=f50e226]: 39⅓
+              - generic [ref=f50e227]:
+                - generic [ref=f50e228]:
+                  - paragraph [ref=f50e229]: 0 pares
+                  - generic [ref=f50e230]: Archivado
+                - paragraph [ref=f50e234]: 69,90 €
+          - generic [ref=f50e235]:
+            - generic [ref=f50e236]:
+              - generic [ref=f50e237]: 1–25 de 387
+              - generic [ref=f50e238]:
+                - generic [ref=f50e239]: Resultados por página
+                - combobox "Resultados por página" [ref=f50e240]:
+                  - option "25 / página" [selected]
+                  - option "50 / página"
+            - navigation "Paginación" [ref=f50e241]:
+              - button "Anterior" [disabled] [ref=f50e242]
+              - button "1" [ref=f50e243]
+              - button "Siguiente" [ref=f50e244]
+    - navigation "Navegación móvil" [ref=f50e245]:
+      - list [ref=f50e246]:
+        - listitem [ref=f50e247]:
+          - link "Stock" [ref=f50e248] [cursor=pointer]:
+            - /url: /stock
+        - listitem [ref=f50e252]:
+          - link "Añadir" [ref=f50e253] [cursor=pointer]:
+            - /url: /anadir
+        - listitem [ref=f50e257]:
+          - link "Contenido" [ref=f50e258] [cursor=pointer]:
+            - /url: /contenido
+        - listitem [ref=f50e262]:
+          - link "Más" [ref=f50e263] [cursor=pointer]:
+            - /url: /ajustes
+  - generic [ref=f50e269]:
+    - button [ref=f50e270]
+    - button [ref=f50e276]
+    - button [ref=f50e280]
+    - button [ref=f50e285]

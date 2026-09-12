@@ -1,0 +1,90 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import Icon from '../../components/ui/Icon.astro';
+import PageHeader from '../../components/ui/PageHeader.astro';
+import PhotoUploadCard from '../../components/ui/PhotoUploadCard.astro';
+import ProductThumbnail from '../../components/ui/ProductThumbnail.astro';
+---
+
+<AdminLayout title="Añadir con fotos" description="Fotografía la caja, el ticket y la zapatilla.">
+  <div data-step="photos">
+    <PageHeader title="Añadir con fotos" description="Haz tres fotos claras. Después podrás revisar todo antes de aprobar." backHref="/anadir" backLabel="Formas de añadir" />
+    <div class="mb-5 flex items-center gap-2 text-xs font-semibold text-slate-500"><span class="grid size-6 place-items-center rounded-full bg-slate-950 text-white">1</span><span>Fotos</span><span class="h-px w-6 bg-slate-200"></span><span class="grid size-6 place-items-center rounded-full bg-slate-200">2</span><span>Revisar</span><span class="h-px w-6 bg-slate-200"></span><span class="grid size-6 place-items-center rounded-full bg-slate-200">3</span><span>Imágenes</span></div>
+    <section class="grid gap-4 lg:grid-cols-3" aria-label="Fotos necesarias">
+      <PhotoUploadCard id="box" title="Caja" hint="Que se vea bien la etiqueta con referencia y talla." tone="blue" />
+      <PhotoUploadCard id="receipt" title="Ticket" hint="Incluye el precio de compra completo." tone="amber" />
+      <PhotoUploadCard id="shoe" title="Zapatilla" hint="Haz una foto lateral con buena luz." />
+    </section>
+    <div class="mt-5 rounded-2xl border border-slate-200 bg-white p-4 sm:flex sm:items-center sm:justify-between sm:p-5"><div><p class="text-sm font-semibold">¿Quieres probar el flujo?</p><p class="mt-1 text-xs text-slate-500">Carga tres imágenes de ejemplo. Solo se usan en tu navegador.</p></div><button type="button" data-sample-photos class="mt-3 min-h-11 rounded-xl border border-slate-200 px-4 text-sm font-semibold sm:mt-0">Usar fotos de ejemplo</button></div>
+    <div class="mt-5 rounded-2xl border border-slate-200 bg-white p-3"><button type="button" data-analyze disabled class="min-h-13 w-full rounded-xl bg-slate-950 px-5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-35 sm:ml-auto sm:block sm:w-auto">Analizar producto</button><p data-photo-count class="mt-2 text-center text-xs text-slate-400 sm:hidden">Faltan 3 fotos</p></div>
+  </div>
+
+  <div data-step="review" class="hidden">
+    <PageHeader title="Producto detectado" description="Comprueba los datos importantes antes de aprobar." backHref="/anadir/fotos" backLabel="Volver a las fotos" />
+    <div class="mx-auto grid max-w-5xl gap-5 lg:grid-cols-[minmax(0,1fr)_18rem]">
+      <section class="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+        <div class="flex items-center gap-4 border-b border-slate-100 pb-5"><ProductThumbnail tone="blue" /><div><p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Nike</p><h2 class="mt-1 text-lg font-semibold">Air Force 1 Retro PRM</h2></div></div>
+        <div class="mt-6 grid gap-5 sm:grid-cols-2">
+          {[
+            ['Referencia', 'IR0871-400', 'Confirmado en la caja'],
+            ['Colorway', 'Hydrogen Blue / Football Grey', 'Confirmado'],
+            ['Talla', '42.5 EU', 'Confirmado en caja y zapatilla'],
+            ['UPC', '198730356907', 'Confirmado en caja y zapatilla'],
+            ['Cantidad', '1', 'Confirmado'],
+            ['Coste', '', 'Revisar']
+          ].map(([label, value, state]) => <label><span class="text-xs font-medium text-slate-500">{label}</span><input value={value} placeholder={label === 'Coste' ? 'No encontrado' : undefined} class:list={['mt-1.5 min-h-11 w-full rounded-xl border bg-white px-3 text-sm font-semibold outline-none focus:border-blue-500', state === 'Revisar' ? 'border-amber-300' : 'border-slate-200']} /><span class:list={['mt-1.5 flex items-center gap-1 text-xs font-medium', state === 'Revisar' ? 'text-amber-700' : 'text-emerald-700']}><Icon name={state === 'Revisar' ? 'warning' : 'check'} class="size-3.5" />{state}</span></label>)}
+          <label><span class="text-xs font-medium text-slate-500">PVP</span><div class="relative mt-1.5"><input value="149,90" inputmode="decimal" class="min-h-11 w-full rounded-xl border border-slate-200 px-3 pr-9 text-sm font-semibold" /><span class="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">€</span></div><span class="mt-1.5 flex items-center gap-1 text-xs font-medium text-amber-700"><Icon name="warning" class="size-3.5" />Revisar precio</span></label>
+        </div>
+      </section>
+      <aside class="h-fit rounded-2xl border border-slate-200 bg-white p-5">
+        <h2 class="font-semibold">Comprobación</h2>
+        <ul class="mt-4 space-y-3 text-sm"><li class="flex gap-2 text-emerald-700"><Icon name="check" class="mt-0.5 size-4 shrink-0" /><span>Caja y zapatilla coinciden</span></li><li class="flex gap-2 text-emerald-700"><Icon name="check" class="mt-0.5 size-4 shrink-0" /><span>UPC detectado</span></li><li class="flex gap-2 text-amber-700"><Icon name="warning" class="mt-0.5 size-4 shrink-0" /><span>Coste no encontrado en el ticket</span></li></ul>
+        <div class="mt-6 space-y-2"><button type="button" data-edit-review class="min-h-12 w-full rounded-xl border border-slate-200 text-sm font-semibold">Editar</button><button type="button" data-approve class="min-h-12 w-full rounded-xl bg-slate-950 text-sm font-semibold text-white">Aprobar producto</button><button type="button" data-approve class="min-h-11 w-full text-xs font-semibold text-slate-500">Aprobar con datos pendientes</button></div>
+      </aside>
+    </div>
+  </div>
+
+  <div data-step="images" class="hidden">
+    <PageHeader title="Producto aprobado" description="Solo falta decidir qué imágenes usarás para publicar." />
+    <section class="mx-auto max-w-2xl rounded-3xl border border-slate-200 bg-white p-6 text-center sm:p-10">
+      <span class="mx-auto grid size-12 place-items-center rounded-full bg-emerald-50 text-emerald-700"><Icon name="check" class="size-6" /></span>
+      <p class="mt-5 text-sm font-medium text-slate-500">Nike Air Force 1 Retro PRM</p>
+      <h2 class="mt-1 text-2xl font-semibold tracking-tight">¿Tienes imágenes listas para publicar?</h2>
+      <p class="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-500">Puedes usar las fotos que acabas de subir o crear imágenes preparadas para cada canal.</p>
+      <div class="mt-7 grid gap-3 sm:grid-cols-2"><a href="/stock/nike-air-force-1-retro-prm" class="grid min-h-13 place-items-center rounded-xl border border-slate-200 px-4 text-sm font-semibold">Sí, usar estas fotos</a><a href="/contenido?producto=nike-air-force-1-retro-prm&panel=imagenes" class="grid min-h-13 place-items-center rounded-xl bg-slate-950 px-4 text-sm font-semibold text-white">No, crear imágenes</a></div>
+    </section>
+  </div>
+
+  <script>
+    const photoCards = Array.from(document.querySelectorAll<HTMLElement>('[data-photo-card]'));
+    const analyze = document.querySelector<HTMLButtonElement>('[data-analyze]');
+    const countLabel = document.querySelector<HTMLElement>('[data-photo-count]');
+    const selected = new Set<HTMLElement>();
+    const updateCount = () => {
+      if (analyze) analyze.disabled = selected.size < 3;
+      if (countLabel) countLabel.textContent = selected.size === 3 ? 'Todo listo' : `Faltan ${3 - selected.size} foto${3 - selected.size === 1 ? '' : 's'}`;
+    };
+    const setPreview = (card: HTMLElement, src: string) => {
+      card.querySelector<HTMLImageElement>('[data-photo-preview] img')!.src = src;
+      card.querySelector('[data-photo-empty]')?.classList.add('hidden');
+      card.querySelector('[data-photo-preview]')?.classList.remove('hidden');
+      card.querySelector('[data-photo-actions]')?.classList.add('hidden');
+      card.querySelector('[data-photo-change]')?.classList.remove('hidden');
+      card.querySelector('[data-photo-change]')?.classList.add('grid');
+      selected.add(card); updateCount();
+    };
+    photoCards.forEach((card, index) => {
+      card.querySelectorAll<HTMLInputElement>('[data-photo-input]').forEach((input) => input.addEventListener('change', () => { const file = input.files?.[0]; if (file) setPreview(card, URL.createObjectURL(file)); }));
+      card.querySelector('[data-photo-remove]')?.addEventListener('click', () => { card.querySelector('[data-photo-empty]')?.classList.remove('hidden'); card.querySelector('[data-photo-preview]')?.classList.add('hidden'); card.querySelector('[data-photo-actions]')?.classList.remove('hidden'); card.querySelector('[data-photo-change]')?.classList.add('hidden'); selected.delete(card); updateCount(); });
+      card.dataset.sampleIndex = String(index);
+    });
+    document.querySelector('[data-sample-photos]')?.addEventListener('click', () => photoCards.forEach((card, index) => {
+      const colors = ['%23dbeafe', '%23fef3c7', '%23e2e8f0'];
+      const names = ['CAJA', 'TICKET', 'ZAPATILLA'];
+      setPreview(card, `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='700' height='450'%3E%3Crect width='700' height='450' fill='${colors[index]}'/%3E%3Ctext x='350' y='235' text-anchor='middle' font-family='Arial' font-size='38' font-weight='700' fill='%23475569'%3E${names[index]} · MUESTRA%3C/text%3E%3C/svg%3E`);
+    }));
+    analyze?.addEventListener('click', () => { document.querySelector('[data-step="photos"]')?.classList.add('hidden'); document.querySelector('[data-step="review"]')?.classList.remove('hidden'); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+    document.querySelector('[data-edit-review]')?.addEventListener('click', () => document.querySelector<HTMLInputElement>('[data-step="review"] input')?.focus());
+    document.querySelectorAll('[data-approve]').forEach((button) => button.addEventListener('click', () => { document.querySelector('[data-step="review"]')?.classList.add('hidden'); document.querySelector('[data-step="images"]')?.classList.remove('hidden'); window.scrollTo({ top: 0, behavior: 'smooth' }); }));
+  </script>
+</AdminLayout>

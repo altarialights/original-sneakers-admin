@@ -1,0 +1,36 @@
+---
+import type { MockProduct } from '../../lib/mock';
+import ProductThumbnail from './ProductThumbnail.astro';
+interface Props { product: MockProduct; }
+const { product } = Astro.props;
+const groups = [
+  { label: 'Tipo', name: 'type', options: ['Fondo blanco', 'Producto premium', 'Lifestyle'], selected: 0 },
+  { label: 'Destino', name: 'channel', options: ['Shopify', 'WhatsApp', 'Vinted'], selected: 0 },
+  { label: 'Formato', name: 'format', options: ['1:1', '4:5', '9:16'], selected: 0 },
+  { label: 'Cantidad', name: 'quantity', options: ['1', '2', '4'], selected: 1 }
+];
+---
+
+<section id="image-generator" class="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"><div><p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Imágenes</p><h2 class="mt-1 text-xl font-semibold">Crear imágenes</h2><p class="mt-1 text-sm text-slate-500">Elige el resultado, no necesitas saber de IA.</p></div><span class="w-fit rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">Simulación</span></div>
+  <div class="mt-6 grid gap-6 xl:grid-cols-[17rem_minmax(0,1fr)]">
+    <div><p class="text-sm font-semibold">Fotos de referencia</p><div class="mt-3 grid grid-cols-3 gap-2">{[product.tone, 'stone', 'blue'].map((tone) => <ProductThumbnail tone={tone as typeof product.tone} size="lg" />)}</div><p class="mt-3 text-xs text-slate-400">{product.name}</p></div>
+    <div class="grid gap-5 sm:grid-cols-2">{groups.map((group) => <fieldset data-choice-group><legend class="mb-2 text-sm font-semibold">{group.label}</legend><div class="flex flex-wrap gap-2">{group.options.map((option, index) => <button type="button" data-choice class:list={['min-h-11 rounded-xl border px-3 text-sm font-semibold transition-colors', index === group.selected ? 'border-slate-950 bg-slate-950 text-white' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50']}>{option}</button>)}</div></fieldset>)}</div>
+  </div>
+  <div class="mt-6 flex flex-col gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:items-center sm:justify-between"><p class="text-xs text-slate-400">No se llamará a ningún servicio externo.</p><button type="button" data-generate-images class="min-h-12 rounded-xl bg-slate-950 px-5 text-sm font-semibold text-white"><span data-generate-label>Generar imágenes</span></button></div>
+
+  <div data-image-results class="mt-6 hidden border-t border-slate-100 pt-6"><div class="flex items-center justify-between"><div><h3 class="font-semibold">Resultados</h3><p class="mt-1 text-xs text-slate-500">Selecciona las imágenes que quieras usar.</p></div><span class="text-xs font-semibold text-emerald-700">4 listas</span></div><div class="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">{['blue', 'stone', 'green', 'violet'].map((tone, index) => <article class="overflow-hidden rounded-2xl border border-slate-200"><label class="relative block cursor-pointer bg-slate-50 p-3"><ProductThumbnail tone={tone as typeof product.tone} size="lg" /><input type="checkbox" checked={index < 2} class="absolute right-3 top-3 size-5 accent-slate-950" aria-label={`Seleccionar imagen ${index + 1}`} /></label><div class="grid grid-cols-2 gap-1 p-2"><button type="button" class="min-h-10 rounded-lg text-xs font-semibold hover:bg-slate-50">Guardar</button><button type="button" data-use-image class="min-h-10 rounded-lg bg-slate-100 text-xs font-semibold">Usar en…</button></div></article>)}</div></div>
+</section>
+
+<script>
+  document.querySelectorAll('[data-choice-group]').forEach((group) => group.querySelectorAll<HTMLElement>('[data-choice]').forEach((button) => button.addEventListener('click', () => {
+    group.querySelectorAll('[data-choice]').forEach((option) => option.className = 'min-h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 hover:bg-slate-50');
+    button.className = 'min-h-11 rounded-xl border border-slate-950 bg-slate-950 px-3 text-sm font-semibold text-white';
+  })));
+  document.querySelector('[data-generate-images]')?.addEventListener('click', () => {
+    const label = document.querySelector<HTMLElement>('[data-generate-label]');
+    if (label) label.textContent = 'Preparando…';
+    window.setTimeout(() => { document.querySelector('[data-image-results]')?.classList.remove('hidden'); if (label) label.textContent = 'Generar de nuevo'; }, 650);
+  });
+  document.querySelectorAll('[data-use-image]').forEach((button) => button.addEventListener('click', () => { (button as HTMLElement).textContent = 'Seleccionada ✓'; }));
+</script>

@@ -8,13 +8,25 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "check": "astro check",
+    "db:health": "node --env-file-if-exists=.env --experimental-strip-types scripts/db.ts health",
+    "db:migrate": "node --env-file-if-exists=.env --experimental-strip-types scripts/db.ts migrate",
+    "db:status": "node --env-file-if-exists=.env --experimental-strip-types scripts/db.ts status",
     "preview": "astro preview",
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^7.2.10"
+    "@astrojs/node": "^11.1.5",
+    "@libsql/client": "^0.17.4",
+    "@tailwindcss/vite": "^4.3.3",
+    "astro": "^7.2.10",
+    "tailwindcss": "^4.3.3"
   },
   "allowScripts": {
     "esbuild": true
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "typescript": "^5.9.3"
   }
 }

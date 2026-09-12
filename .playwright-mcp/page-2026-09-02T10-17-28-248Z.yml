@@ -1,0 +1,155 @@
+- generic [active] [ref=f108e1]:
+  - generic [ref=f108e2]:
+    - banner [ref=f108e3]:
+      - button "Abrir navegación" [ref=f108e4]
+      - link "OS Original Sneakers" [ref=f108e7] [cursor=pointer]:
+        - /url: /stock
+        - generic [ref=f108e8]: OS
+        - generic [ref=f108e9]: Original Sneakers
+      - generic [ref=f108e10]: Conectado
+    - main [ref=f108e12]:
+      - generic [ref=f108e13]:
+        - generic [ref=f108e14]:
+          - link "← Formas de añadir" [ref=f108e15] [cursor=pointer]:
+            - /url: /anadir
+          - generic [ref=f108e16]:
+            - generic [ref=f108e17]:
+              - heading "Añadir manualmente" [level=1] [ref=f108e18]
+              - paragraph [ref=f108e19]: Crea el producto una vez y añade todas sus tallas.
+            - generic [ref=f108e20]:
+              - link "Cancelar" [ref=f108e21] [cursor=pointer]:
+                - /url: /stock
+              - button "Guardar producto" [disabled] [ref=f108e22]
+        - list "Progreso" [ref=f108e23]:
+          - listitem [ref=f108e24]:
+            - generic [ref=f108e25]: "1"
+            - text: Producto
+          - listitem [ref=f108e26]:
+            - generic [ref=f108e27]: "2"
+            - text: Tallas y stock
+          - listitem [ref=f108e28]:
+            - generic [ref=f108e29]: "3"
+            - text: Revisar
+        - generic [ref=f108e30]:
+          - generic [ref=f108e31]:
+            - generic [ref=f108e32]:
+              - generic [ref=f108e33]:
+                - paragraph [ref=f108e34]: Paso 1
+                - heading "Producto" [level=2] [ref=f108e35]
+                - paragraph [ref=f108e36]: Información común para todas las tallas.
+              - generic [ref=f108e37]:
+                - generic [ref=f108e38]:
+                  - generic [ref=f108e39]: Marca *
+                  - textbox "Marca *" [ref=f108e40]: Nike
+                - generic [ref=f108e41]:
+                  - generic [ref=f108e42]: Modelo *
+                  - textbox "Modelo *" [ref=f108e43]: Dunk Low Panda
+                - generic [ref=f108e44]:
+                  - generic [ref=f108e45]: Referencia
+                  - textbox "Referencia" [ref=f108e46]: DD1391-100
+                - generic [ref=f108e47]:
+                  - generic [ref=f108e48]: Colorway
+                  - textbox "Colorway" [ref=f108e49]: Black / White
+                - generic [ref=f108e50]:
+                  - generic [ref=f108e51]: Tipo
+                  - combobox "Tipo" [ref=f108e52]:
+                    - option "Calzado" [selected]
+                    - option "Ropa"
+                    - option "Accesorio"
+            - generic [ref=f108e53]:
+              - generic [ref=f108e54]:
+                - generic [ref=f108e55]:
+                  - paragraph [ref=f108e56]: Paso 2
+                  - heading "Variantes" [level=2] [ref=f108e57]
+                  - paragraph [ref=f108e58]: Una fila por talla; el producto no se repite.
+                - button "+ Añadir otra talla" [ref=f108e59]
+              - table [ref=f108e61]:
+                - rowgroup [ref=f108e62]:
+                  - row [ref=f108e63]:
+                    - columnheader "Talla" [ref=f108e64]
+                    - columnheader "Sistema" [ref=f108e65]
+                    - columnheader "Cantidad" [ref=f108e66]
+                    - columnheader "PVP" [ref=f108e67]
+                    - columnheader "Coste" [ref=f108e68]
+                    - columnheader "Ubicación" [ref=f108e69]
+                    - columnheader [ref=f108e70]
+                - rowgroup [ref=f108e71]:
+                  - row [ref=f108e72]:
+                    - cell [ref=f108e73]:
+                      - textbox "Talla" [ref=f108e74]: "40"
+                    - cell "EU" [ref=f108e75]:
+                      - combobox "Sistema de talla" [ref=f108e76]:
+                        - option "EU" [selected]
+                    - cell [ref=f108e77]:
+                      - textbox "Cantidad" [ref=f108e78]: "1"
+                    - cell [ref=f108e79]:
+                      - textbox "PVP" [ref=f108e80]: 119,90
+                    - cell [ref=f108e81]:
+                      - textbox "Coste" [ref=f108e82]: 72,00
+                    - cell "Tienda" [ref=f108e83]:
+                      - combobox "Ubicación" [ref=f108e84]:
+                        - option "Tienda" [selected]
+                        - option "Almacén"
+                    - cell [ref=f108e85]:
+                      - button "Quitar talla 40" [ref=f108e86]: ×
+                  - row [ref=f108e87]:
+                    - cell [ref=f108e88]:
+                      - textbox "Talla" [ref=f108e89]: "41"
+                    - cell "EU" [ref=f108e90]:
+                      - combobox "Sistema de talla" [ref=f108e91]:
+                        - option "EU" [selected]
+                    - cell [ref=f108e92]:
+                      - textbox "Cantidad" [ref=f108e93]: "2"
+                    - cell [ref=f108e94]:
+                      - textbox "PVP" [ref=f108e95]: 119,90
+                    - cell [ref=f108e96]:
+                      - textbox "Coste" [ref=f108e97]: 72,00
+                    - cell "Tienda" [ref=f108e98]:
+                      - combobox "Ubicación" [ref=f108e99]:
+                        - option "Tienda" [selected]
+                        - option "Almacén"
+                    - cell [ref=f108e100]:
+                      - button "Quitar talla 41" [ref=f108e101]: ×
+                  - row [ref=f108e102]:
+                    - cell [ref=f108e103]:
+                      - textbox "Talla" [ref=f108e104]: "42"
+                    - cell "EU" [ref=f108e105]:
+                      - combobox "Sistema de talla" [ref=f108e106]:
+                        - option "EU" [selected]
+                    - cell [ref=f108e107]:
+                      - textbox "Cantidad" [ref=f108e108]: "1"
+                    - cell [ref=f108e109]:
+                      - textbox "PVP" [ref=f108e110]: 119,90
+                    - cell [ref=f108e111]:
+                      - textbox "Coste" [ref=f108e112]: 72,00
+                    - cell "Tienda" [ref=f108e113]:
+                      - combobox "Ubicación" [ref=f108e114]:
+                        - option "Tienda" [selected]
+                        - option "Almacén"
+                    - cell [ref=f108e115]:
+                      - button "Quitar talla 42" [ref=f108e116]: ×
+          - complementary [ref=f108e117]:
+            - heading "Aplicar a todas" [level=2] [ref=f108e118]
+            - paragraph [ref=f108e119]: Completa un valor una vez para todas las tallas.
+            - generic [ref=f108e120]:
+              - generic [ref=f108e121]:
+                - generic [ref=f108e122]: PVP
+                - textbox "PVP" [ref=f108e123]: 119,90
+              - generic [ref=f108e124]:
+                - generic [ref=f108e125]: Coste
+                - textbox "Coste" [ref=f108e126]: 72,00
+              - generic [ref=f108e127]:
+                - generic [ref=f108e128]: Sistema
+                - combobox "Sistema" [ref=f108e129]:
+                  - option "EU" [selected]
+              - generic [ref=f108e130]:
+                - generic [ref=f108e131]: Ubicación
+                - combobox "Ubicación" [ref=f108e132]:
+                  - option "Tienda" [selected]
+            - button "Aplicar a todas las tallas" [ref=f108e133]
+            - paragraph [ref=f108e134]: Los cambios no se guardan en esta versión.
+  - generic [ref=f108e137]:
+    - button [ref=f108e138]
+    - button [ref=f108e144]
+    - button [ref=f108e148]
+    - button [ref=f108e153]

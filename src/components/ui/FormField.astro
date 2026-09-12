@@ -1,0 +1,5 @@
+---
+interface Props { label: string; name: string; value?: string; placeholder?: string; required?: boolean; type?: 'text' | 'number' | 'email'; hint?: string; }
+const { label, name, value, placeholder, required = false, type = 'text', hint } = Astro.props;
+---
+<label class="block min-w-0"><span class="mb-1.5 block text-sm font-medium text-slate-700">{label}{required && <span class="text-rose-600"> *</span>}</span><input type={type} name={name} value={value} placeholder={placeholder} required={required} class="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm text-slate-950 outline-none placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10" />{hint && <span class="mt-1.5 block text-xs text-slate-500">{hint}</span>}</label>

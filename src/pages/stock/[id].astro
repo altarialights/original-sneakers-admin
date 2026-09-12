@@ -1,0 +1,83 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import ActionMenu from '../../components/ui/ActionMenu.astro';
+import Button from '../../components/ui/Button.astro';
+import FormField from '../../components/ui/FormField.astro';
+import Modal from '../../components/ui/Modal.astro';
+import PageHeader from '../../components/ui/PageHeader.astro';
+import ProductThumbnail from '../../components/ui/ProductThumbnail.astro';
+import StatusBadge from '../../components/ui/StatusBadge.astro';
+import { formatMoney, mockProducts } from '../../lib/mock';
+
+export const prerender = false;
+const product = mockProducts.find((item) => item.id === Astro.params.id);
+if (!product) return Astro.redirect('/stock');
+---
+
+<AdminLayout title={product.name} description={`${product.reference} · ${product.brand}`}>
+  <PageHeader title={product.name} description={product.reference} backHref="/stock" backLabel="Volver a stock">
+    <Fragment slot="actions">
+      <Button dataDialogOpen="edit-product">Editar</Button>
+      <Button dataDialogOpen="adjust-stock">Ajustar stock</Button>
+      <Button href={`/contenido?producto=${product.id}&panel=imagenes`} icon="sparkles">Crear imágenes</Button>
+      <Button href={`/contenido?producto=${product.id}&canal=shopify`} variant="primary" icon="shopify">Shopify</Button>
+      <ActionMenu><button type="button" data-dialog-open="archive-product" class="block min-h-11 w-full rounded-lg px-3 text-left font-medium text-rose-700 hover:bg-rose-50">Dar de baja</button></ActionMenu>
+    </Fragment>
+  </PageHeader>
+
+  <div class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(22rem,.8fr)]">
+    <section class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
+      <div class="grid gap-3 sm:grid-cols-[4.5rem_1fr]"><div class="order-2 flex gap-2 sm:order-1 sm:flex-col">{[product.tone, 'stone', 'blue'].map((tone) => <button type="button" class="w-16 overflow-hidden rounded-xl ring-1 ring-slate-200 first:ring-2 first:ring-slate-950 sm:w-full" aria-label="Ver imagen"><ProductThumbnail tone={tone as typeof product.tone} size="lg" /></button>)}</div><div class="order-1 sm:order-2"><ProductThumbnail tone={product.tone} size="lg" /></div></div>
+      <p class="mt-3 text-xs text-slate-400">Imágenes de muestra</p>
+    </section>
+
+    <section class="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+      <div class="flex items-center justify-between"><h2 class="text-lg font-semibold">Producto</h2><StatusBadge status={product.status} /></div>
+      <dl class="mt-6 grid grid-cols-2 gap-x-5 gap-y-6">
+        {[
+          ['Marca', product.brand], ['Modelo', product.model], ['Referencia', product.reference],
+          ['Colorway', product.colorway], ['UPC', product.upc], ['Tipo', product.type],
+          ['Precio', formatMoney(product.price)], ['Coste', formatMoney(product.cost)]
+        ].map(([label, value]) => <div><dt class="text-xs font-medium text-slate-400">{label}</dt><dd class="mt-1 text-sm font-semibold">{value}</dd></div>)}
+      </dl>
+    </section>
+  </div>
+
+  <section class="mt-5 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+    <header class="flex flex-col gap-4 border-b border-slate-200 p-5 sm:flex-row sm:items-center sm:justify-between">
+      <div><h2 class="text-lg font-semibold">Tallas y stock</h2><p class="mt-1 text-sm text-slate-500">{product.stock} pares disponibles</p></div>
+      <div class="flex gap-2"><Button icon="plus">Añadir talla</Button><Button dataDialogOpen="adjust-stock" variant="primary">Ajustar stock</Button></div>
+    </header>
+    <div class="hidden md:block"><table class="w-full text-left text-sm"><thead class="bg-slate-50 text-xs text-slate-500"><tr><th class="px-5 py-3">Talla</th><th class="px-3 py-3">Cantidad</th><th class="px-3 py-3">PVP</th><th class="px-3 py-3">Coste</th><th class="px-3 py-3">Estado</th><th class="px-3 py-3"></th></tr></thead><tbody class="divide-y divide-slate-100">{product.variants.map((variant) => <tr><td class="px-5 py-4 font-semibold">{variant.size} <span class="text-xs text-slate-400">{variant.sizeSystem}</span></td><td class="px-3 py-4 font-semibold tabular-nums">{variant.quantity}</td><td class="px-3 py-4 tabular-nums">{formatMoney(variant.price)}</td><td class="px-3 py-4 tabular-nums text-slate-500">{formatMoney(variant.cost)}</td><td class="px-3 py-4"><StatusBadge status={variant.quantity > 0 ? 'Disponible' : 'Sin stock'} compact /></td><td class="px-3 py-4"><button type="button" data-variant-stock data-size={variant.size} data-quantity={variant.quantity} class="min-h-11 rounded-xl px-3 text-xs font-semibold text-slate-600 hover:bg-slate-100">Ajustar</button></td></tr>)}</tbody></table></div>
+    <div class="divide-y divide-slate-100 md:hidden">{product.variants.map((variant) => <article class="p-4"><div class="flex items-center justify-between"><p class="text-lg font-semibold">{variant.size} <span class="text-xs text-slate-400">{variant.sizeSystem}</span></p><StatusBadge status={variant.quantity > 0 ? 'Disponible' : 'Sin stock'} compact /></div><dl class="mt-4 grid grid-cols-3 gap-3"><div><dt class="text-xs text-slate-400">Cantidad</dt><dd class="mt-1 text-sm font-semibold">{variant.quantity}</dd></div><div><dt class="text-xs text-slate-400">PVP</dt><dd class="mt-1 text-sm font-semibold">{formatMoney(variant.price)}</dd></div><div><dt class="text-xs text-slate-400">Coste</dt><dd class="mt-1 text-sm font-semibold">{formatMoney(variant.cost)}</dd></div></dl><button type="button" data-variant-stock data-size={variant.size} data-quantity={variant.quantity} class="mt-4 min-h-11 w-full rounded-xl bg-slate-100 text-sm font-semibold">Ajustar stock</button></article>)}</div>
+  </section>
+
+  <section class="mt-5 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"><div><div class="flex items-center gap-2"><h2 class="text-lg font-semibold">Shopify</h2><StatusBadge status={product.shopifyStatus} compact /></div><p class="mt-1 text-sm text-slate-500">La publicación vive dentro de este producto.</p></div><div class="flex flex-wrap gap-2">{product.shopifyStatus !== 'Publicado' && <Button variant="primary">Publicar</Button>}{product.shopifyStatus === 'Publicado' && <Button variant="primary">Actualizar</Button>}<Button>Despublicar</Button></div></div>
+  </section>
+
+  <Modal id="adjust-stock" title="Ajustar stock" description={`${product.name} · cambio no persistente`}>
+    <label class="block"><span class="mb-1.5 block text-sm font-medium">Talla</span><select data-size-select class="min-h-12 w-full rounded-xl border border-slate-200 bg-white px-3">{product.variants.map((variant) => <option value={variant.size} data-quantity={variant.quantity}>{variant.size} {variant.sizeSystem}</option>)}</select></label>
+    <div class="mt-6"><p class="text-center text-xs font-medium text-slate-500">Cantidad actual</p><div class="mt-3 flex items-center justify-center gap-3"><button type="button" data-minus class="grid size-12 place-items-center rounded-xl border border-slate-200 text-xl">−</button><output data-quantity class="grid size-14 place-items-center rounded-xl bg-slate-100 text-xl font-semibold">{product.variants[0]?.quantity ?? 0}</output><button type="button" data-plus class="grid size-12 place-items-center rounded-xl bg-slate-950 text-xl text-white">+</button></div></div>
+    <label class="mt-6 block"><span class="mb-1.5 block text-sm font-medium">Motivo</span><select class="min-h-12 w-full rounded-xl border border-slate-200 bg-white px-3"><option>Venta</option><option>Compra</option><option>Ajuste</option><option>Devolución</option></select></label>
+    <div class="mt-6 grid grid-cols-2 gap-2"><button type="button" data-dialog-close class="min-h-12 rounded-xl border border-slate-200 font-semibold">Cancelar</button><button type="button" data-dialog-close class="min-h-12 rounded-xl bg-slate-950 font-semibold text-white">Guardar</button></div>
+  </Modal>
+
+  <Modal id="edit-product" title="Editar producto" description="Los cambios no se guardarán en esta demo."><div class="grid gap-4 sm:grid-cols-2"><FormField label="Marca" name="brand" value={product.brand} /><FormField label="Modelo" name="model" value={product.model} /><FormField label="Referencia" name="reference" value={product.reference} /><FormField label="UPC" name="upc" value={product.upc} /></div><div class="mt-6 flex justify-end gap-2"><button type="button" data-dialog-close class="min-h-11 rounded-xl border border-slate-200 px-4 font-semibold">Cancelar</button><button type="button" data-dialog-close class="min-h-11 rounded-xl bg-slate-950 px-4 font-semibold text-white">Guardar</button></div></Modal>
+  <Modal id="archive-product" title="Dar de baja producto" description="Este producto dejará de estar activo pero conservará su historial."><div class="rounded-xl bg-rose-50 p-3 text-sm font-semibold text-rose-800">{product.name}</div><div class="mt-6 grid grid-cols-2 gap-2"><button type="button" data-dialog-close class="min-h-12 rounded-xl border border-slate-200 font-semibold">Cancelar</button><button type="button" data-dialog-close class="min-h-12 rounded-xl bg-rose-600 font-semibold text-white">Dar de baja</button></div></Modal>
+
+  <script>
+    const select = document.querySelector<HTMLSelectElement>('[data-size-select]');
+    const output = document.querySelector<HTMLOutputElement>('[data-quantity]');
+    let value = Number(select?.selectedOptions[0]?.dataset.quantity ?? 0);
+    const render = () => { if (output) output.textContent = String(value); };
+    select?.addEventListener('change', () => { value = Number(select.selectedOptions[0]?.dataset.quantity ?? 0); render(); });
+    document.querySelector('[data-minus]')?.addEventListener('click', () => { value = Math.max(0, value - 1); render(); });
+    document.querySelector('[data-plus]')?.addEventListener('click', () => { value += 1; render(); });
+    document.querySelectorAll<HTMLElement>('[data-variant-stock]').forEach((button) => button.addEventListener('click', () => {
+      if (select) select.value = button.dataset.size ?? select.value;
+      value = Number(button.dataset.quantity ?? 0); render();
+      document.querySelector<HTMLDialogElement>('#adjust-stock')?.showModal();
+    }));
+  </script>
+</AdminLayout>

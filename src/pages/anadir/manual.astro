@@ -1,0 +1,40 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import Button from '../../components/ui/Button.astro';
+import FormField from '../../components/ui/FormField.astro';
+import PageHeader from '../../components/ui/PageHeader.astro';
+---
+
+<AdminLayout title="Añadir manualmente" description="Completa solo la información necesaria.">
+  <PageHeader title="Añadir manualmente" description="Completa solo la información necesaria." backHref="/anadir" backLabel="Formas de añadir">
+    <Fragment slot="actions"><Button href="/stock">Cancelar</Button><Button variant="primary">Guardar producto</Button></Fragment>
+  </PageHeader>
+  <form class="mx-auto max-w-5xl space-y-5" data-mock-form>
+    <section class="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+      <h2 class="text-lg font-semibold">Producto</h2><p class="mt-1 text-sm text-slate-500">Datos comunes a todas las tallas.</p>
+      <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <FormField label="Marca" name="brand" placeholder="Nike" required />
+        <FormField label="Modelo" name="model" placeholder="Air Force 1 Retro PRM" required />
+        <FormField label="Referencia" name="reference" placeholder="IR0871-400" />
+        <FormField label="Colorway" name="colorway" placeholder="Hydrogen Blue / Football Grey" />
+        <FormField label="UPC" name="upc" placeholder="198730356907" />
+        <label><span class="mb-1.5 block text-sm font-medium text-slate-700">Tipo</span><select class="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm"><option>Calzado</option><option>Ropa</option><option>Accesorio</option></select></label>
+      </div>
+    </section>
+
+    <section class="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+      <div class="flex items-center justify-between"><div><h2 class="text-lg font-semibold">Stock</h2><p class="mt-1 text-sm text-slate-500">Añade una fila por talla.</p></div><button type="button" data-add-size class="min-h-11 rounded-xl border border-slate-200 px-3 text-sm font-semibold">+ Añadir talla</button></div>
+      <div data-variants class="mt-6 space-y-3">
+        <fieldset data-variant class="rounded-xl bg-slate-50 p-4"><legend class="sr-only">Talla</legend><div class="grid grid-cols-2 gap-3 lg:grid-cols-5"><FormField label="Talla" name="size" placeholder="42.5" /><label><span class="mb-1.5 block text-sm font-medium">Sistema</span><select class="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3"><option>EU</option><option>US</option><option>UK</option></select></label><FormField label="Cantidad" name="quantity" value="1" type="number" /><FormField label="PVP" name="price" placeholder="149,90" /><FormField label="Coste" name="cost" placeholder="79,99" /></div></fieldset>
+      </div>
+      <template id="variant-template"><fieldset data-variant class="rounded-xl bg-slate-50 p-4"><legend class="sr-only">Otra talla</legend><div class="grid grid-cols-2 gap-3 lg:grid-cols-5"><label><span class="mb-1.5 block text-sm font-medium">Talla</span><input name="size" class="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3" /></label><label><span class="mb-1.5 block text-sm font-medium">Sistema</span><select class="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3"><option>EU</option><option>US</option><option>UK</option></select></label><label><span class="mb-1.5 block text-sm font-medium">Cantidad</span><input type="number" value="1" class="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3" /></label><label><span class="mb-1.5 block text-sm font-medium">PVP</span><input inputmode="decimal" class="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3" /></label><label><span class="mb-1.5 block text-sm font-medium">Coste</span><input inputmode="decimal" class="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3" /></label></div><button type="button" data-remove-size class="mt-2 min-h-11 text-sm font-semibold text-rose-700">Quitar talla</button></fieldset></template>
+    </section>
+    <p class="text-center text-xs text-slate-400">Demostración visual · no se guardarán datos</p>
+  </form>
+  <script>
+    const variants = document.querySelector<HTMLElement>('[data-variants]');
+    const template = document.querySelector<HTMLTemplateElement>('#variant-template');
+    document.querySelector('[data-add-size]')?.addEventListener('click', () => { if (variants && template) variants.append(template.content.cloneNode(true)); });
+    variants?.addEventListener('click', (event) => { (event.target as HTMLElement).closest('[data-remove-size]')?.closest('[data-variant]')?.remove(); });
+  </script>
+</AdminLayout>

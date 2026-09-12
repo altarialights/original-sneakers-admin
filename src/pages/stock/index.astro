@@ -1,0 +1,75 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import Button from '../../components/ui/Button.astro';
+import Icon from '../../components/ui/Icon.astro';
+import Modal from '../../components/ui/Modal.astro';
+import PageHeader from '../../components/ui/PageHeader.astro';
+import StatCard from '../../components/ui/StatCard.astro';
+import FilterBar from '../../components/stock/FilterBar.astro';
+import ProductMobileCard from '../../components/stock/ProductMobileCard.astro';
+import StockTable from '../../components/stock/StockTable.astro';
+import { mockProducts, mockStockStats } from '../../lib/mock';
+---
+
+<AdminLayout title="Stock" description="Gestiona tus productos y unidades disponibles.">
+  <PageHeader title="Stock" description="Gestiona tus productos y unidades disponibles.">
+    <Fragment slot="actions"><Button href="/anadir" variant="primary" icon="plus">Añadir producto</Button></Fragment>
+  </PageHeader>
+
+  <section class="mb-5 rounded-2xl border border-slate-200 bg-white px-5 py-4" aria-label="Resumen de stock">
+    <dl class="grid grid-cols-3 gap-4">{mockStockStats.map((stat) => <StatCard {...stat} tone={stat.tone === 'danger' ? 'danger' : 'default'} />)}</dl>
+  </section>
+
+  <section class="space-y-3" aria-label="Buscar y filtrar productos">
+    <label class="relative block">
+      <span class="sr-only">Buscar productos</span>
+      <Icon name="search" class="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-slate-400" />
+      <input type="search" placeholder="Buscar modelo, referencia, UPC, talla..." class="min-h-12 w-full rounded-xl border border-slate-200 bg-white pl-12 pr-4 text-base outline-none placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10" />
+    </label>
+    <FilterBar />
+  </section>
+
+  <section class="mt-5 overflow-visible rounded-2xl border border-slate-200 bg-white" aria-labelledby="product-list-title">
+    <header class="flex items-center justify-between border-b border-slate-200 px-4 py-4 sm:px-5">
+      <div><h2 id="product-list-title" class="font-semibold">Productos</h2><p class="mt-0.5 text-xs text-slate-500">5 productos · datos de muestra</p></div>
+      <span class="text-xs font-medium text-slate-400">Ordenados por nombre</span>
+    </header>
+    <StockTable products={mockProducts} />
+    <div class="lg:hidden">{mockProducts.map((product) => <ProductMobileCard product={product} />)}</div>
+  </section>
+
+  <Modal id="adjust-stock" title="Ajustar stock" description="El cambio es solo una demostración y no se guardará.">
+    <p data-stock-product class="text-sm font-semibold"></p>
+    <p class="mt-1 text-sm text-slate-500">Talla <span data-stock-size class="font-semibold text-slate-700"></span></p>
+    <div class="mt-6"><p class="text-center text-xs font-medium text-slate-500">Cantidad actual</p><div class="mt-3 flex items-center justify-center gap-3"><button type="button" data-quantity-minus class="grid size-12 place-items-center rounded-xl border border-slate-200 text-xl font-medium">−</button><output data-stock-quantity class="grid size-14 place-items-center rounded-xl bg-slate-100 text-xl font-semibold tabular-nums">0</output><button type="button" data-quantity-plus class="grid size-12 place-items-center rounded-xl bg-slate-950 text-xl font-medium text-white">+</button></div></div>
+    <label class="mt-6 block"><span class="mb-1.5 block text-sm font-medium">Motivo</span><select class="min-h-12 w-full rounded-xl border border-slate-200 bg-white px-3"><option>Venta</option><option>Compra</option><option>Ajuste</option><option>Devolución</option></select></label>
+    <div class="mt-6 grid grid-cols-2 gap-2"><button type="button" data-dialog-close class="min-h-12 rounded-xl border border-slate-200 text-sm font-semibold">Cancelar</button><button type="button" data-dialog-close class="min-h-12 rounded-xl bg-slate-950 text-sm font-semibold text-white">Guardar</button></div>
+  </Modal>
+
+  <Modal id="archive-product" title="Dar de baja producto" description="Este producto dejará de estar activo pero conservará su historial.">
+    <p data-archive-product class="rounded-xl bg-rose-50 p-3 text-sm font-semibold text-rose-800"></p>
+    <div class="mt-6 grid grid-cols-2 gap-2"><button type="button" data-dialog-close class="min-h-12 rounded-xl border border-slate-200 text-sm font-semibold">Cancelar</button><button type="button" data-dialog-close class="min-h-12 rounded-xl bg-rose-600 text-sm font-semibold text-white">Dar de baja</button></div>
+  </Modal>
+
+  <script>
+    const stockDialog = document.querySelector<HTMLDialogElement>('#adjust-stock');
+    const archiveDialog = document.querySelector<HTMLDialogElement>('#archive-product');
+    const quantity = document.querySelector<HTMLOutputElement>('[data-stock-quantity]');
+    let currentQuantity = 0;
+    document.querySelectorAll<HTMLElement>('[data-stock-open]').forEach((button) => button.addEventListener('click', () => {
+      currentQuantity = Number(button.dataset.quantity ?? 0);
+      document.querySelector<HTMLElement>('[data-stock-product]')!.textContent = button.dataset.product ?? '';
+      document.querySelector<HTMLElement>('[data-stock-size]')!.textContent = button.dataset.size ?? '';
+      if (quantity) quantity.textContent = String(currentQuantity);
+      stockDialog?.showModal();
+      button.closest('details')?.removeAttribute('open');
+    }));
+    document.querySelector('[data-quantity-minus]')?.addEventListener('click', () => { currentQuantity = Math.max(0, currentQuantity - 1); if (quantity) quantity.textContent = String(currentQuantity); });
+    document.querySelector('[data-quantity-plus]')?.addEventListener('click', () => { currentQuantity += 1; if (quantity) quantity.textContent = String(currentQuantity); });
+    document.querySelectorAll<HTMLElement>('[data-archive-open]').forEach((button) => button.addEventListener('click', () => {
+      document.querySelector<HTMLElement>('[data-archive-product]')!.textContent = button.dataset.product ?? '';
+      archiveDialog?.showModal();
+      button.closest('details')?.removeAttribute('open');
+    }));
+  </script>
+</AdminLayout>

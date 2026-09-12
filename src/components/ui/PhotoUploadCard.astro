@@ -1,0 +1,21 @@
+---
+import Icon from './Icon.astro';
+interface Props { id: string; title: string; hint: string; tone?: 'blue' | 'amber' | 'stone'; }
+const { id, title, hint, tone = 'stone' } = Astro.props;
+const tones = { blue: 'bg-blue-50 text-blue-700', amber: 'bg-amber-50 text-amber-700', stone: 'bg-slate-100 text-slate-600' };
+---
+
+<article data-photo-card data-photo-id={id} class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+  <div class="p-4 sm:p-5">
+    <div class="flex items-start gap-3"><span class:list={['grid size-10 shrink-0 place-items-center rounded-xl', tones[tone]]}><Icon name="image" /></span><div><h3 class="font-semibold">{title}</h3><p class="mt-0.5 text-xs leading-5 text-slate-500">{hint}</p></div></div>
+    <div data-photo-empty class="mt-4 grid min-h-44 place-items-center rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center">
+      <div><Icon name="image" class="mx-auto size-8 text-slate-300" /><p class="mt-2 text-sm font-medium text-slate-500">Aún no hay foto</p></div>
+    </div>
+    <div data-photo-preview class="relative mt-4 hidden min-h-44 overflow-hidden rounded-xl bg-slate-100"><img alt={`Vista previa de ${title}`} class="absolute inset-0 size-full object-cover" /><span class="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1.5 text-xs font-semibold text-emerald-700 shadow-sm"><Icon name="check" class="size-4" />Correcta</span></div>
+    <div class="mt-3 grid grid-cols-2 gap-2" data-photo-actions>
+      <label class="grid min-h-11 cursor-pointer place-items-center rounded-xl bg-slate-950 px-2 text-center text-sm font-semibold text-white">Hacer foto<input type="file" accept="image/*" capture="environment" class="sr-only" data-photo-input /></label>
+      <label class="grid min-h-11 cursor-pointer place-items-center rounded-xl border border-slate-200 px-2 text-center text-sm font-semibold">Subir imagen<input type="file" accept="image/*" class="sr-only" data-photo-input /></label>
+    </div>
+    <div data-photo-change class="mt-3 hidden grid-cols-2 gap-2"><label class="grid min-h-11 cursor-pointer place-items-center rounded-xl border border-slate-200 text-sm font-semibold">Cambiar foto<input type="file" accept="image/*" class="sr-only" data-photo-input /></label><button type="button" data-photo-remove class="min-h-11 rounded-xl text-sm font-semibold text-rose-700 hover:bg-rose-50">Eliminar foto</button></div>
+  </div>
+</article>

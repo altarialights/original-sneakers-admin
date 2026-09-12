@@ -1,0 +1,16 @@
+---
+interface Props { tone?: 'stone' | 'blue' | 'amber' | 'rose' | 'green' | 'violet'; size?: 'sm' | 'md' | 'lg'; }
+const { tone = 'stone', size = 'md' } = Astro.props;
+const colors = {
+  stone: 'bg-stone-100 text-stone-500', blue: 'bg-blue-50 text-blue-500', amber: 'bg-amber-50 text-amber-600',
+  rose: 'bg-rose-50 text-rose-500', green: 'bg-emerald-50 text-emerald-600', violet: 'bg-violet-50 text-violet-500'
+};
+const sizes = { sm: 'size-12 rounded-xl', md: 'size-14 rounded-xl', lg: 'aspect-square w-full rounded-2xl' };
+---
+
+<div class:list={['grid shrink-0 place-items-center overflow-hidden', colors[tone], sizes[size]]} role="img" aria-label="Imagen de producto de muestra">
+  <svg class:list={[size === 'lg' ? 'w-3/4' : 'w-10']} viewBox="0 0 120 72" fill="none" aria-hidden="true">
+    <path d="M18 43c12 0 20-6 29-20l14 8c7 4 13 7 22 9l19 4c5 1 8 5 8 10 0 6-5 10-11 10H24C13 64 8 58 10 51c1-5 3-8 8-8Z" fill="currentColor" opacity=".2" />
+    <path d="M15 50c17 7 59 5 94 2M44 27l8 13m2-9 8 12m2-8 8 10M26 43c10 4 18 5 28 4" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+  </svg>
+</div>

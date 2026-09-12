@@ -1,0 +1,66 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import ImageGenerationPanel from '../../components/ui/ImageGenerationPanel.astro';
+import PageHeader from '../../components/ui/PageHeader.astro';
+import ProductThumbnail from '../../components/ui/ProductThumbnail.astro';
+import StatusBadge from '../../components/ui/StatusBadge.astro';
+import { formatMoney, mockProducts } from '../../lib/mock';
+
+const selected = mockProducts.find((product) => product.id === Astro.url.searchParams.get('producto')) ?? mockProducts[0];
+const initialChannel = Astro.url.searchParams.get('canal');
+const activeChannel = ['shopify', 'whatsapp', 'vinted'].includes(initialChannel ?? '') ? initialChannel : 'shopify';
+---
+
+<AdminLayout title="Contenido" description="Prepara imágenes y textos para cada canal.">
+  <PageHeader title="Contenido" description="Elige un producto y prepara lo necesario para Shopify, WhatsApp o Vinted." />
+
+  <section class="mb-5 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
+    <div class="grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(18rem,.7fr)] sm:items-end"><label><span class="mb-1.5 block text-sm font-semibold">Producto</span><select data-product-select class="min-h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold">{mockProducts.map((product) => <option value={product.id} selected={product.id === selected.id}>{product.name} · {product.reference}</option>)}</select></label><div class="flex items-center gap-3 rounded-xl bg-slate-50 p-3"><ProductThumbnail tone={selected.tone} /><div class="min-w-0"><p class="truncate text-sm font-semibold">{selected.name}</p><p class="mt-1 text-xs text-slate-500">{selected.sizes.join(' · ')} · {formatMoney(selected.price)}</p></div></div></div>
+  </section>
+
+  <ImageGenerationPanel product={selected} />
+
+  <section class="mt-5 overflow-hidden rounded-2xl border border-slate-200 bg-white" id="channel-content">
+    <header class="border-b border-slate-200 p-5 sm:p-6"><div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"><div><p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Textos por plantilla</p><h2 class="mt-1 text-xl font-semibold">Contenido por canal</h2><p class="mt-1 text-sm text-slate-500">Todos los campos se pueden editar.</p></div><button type="button" data-regenerate class="min-h-11 rounded-xl border border-slate-200 px-4 text-sm font-semibold">Regenerar desde plantilla</button></div>
+      <div class="mt-5 grid grid-cols-3 gap-1 rounded-xl bg-slate-100 p-1" role="tablist">{['shopify', 'whatsapp', 'vinted'].map((channel) => <button type="button" data-channel={channel} role="tab" aria-selected={channel === activeChannel} class:list={['min-h-11 rounded-lg px-2 text-sm font-semibold capitalize', channel === activeChannel ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-500']}>{channel}</button>)}</div>
+    </header>
+
+    <div data-channel-panel="shopify" class:list={['p-5 sm:p-6', activeChannel !== 'shopify' && 'hidden']}>
+      <div class="mb-5 flex items-center justify-between"><div><h3 class="text-lg font-semibold">Shopify</h3><p class="mt-1 text-sm text-slate-500">Ficha preparada para la tienda.</p></div><StatusBadge status={selected.shopifyStatus} /></div>
+      <div class="grid gap-5 lg:grid-cols-2"><div class="space-y-4"><label class="block"><span class="mb-1.5 block text-sm font-medium">Título</span><input value={selected.name} class="min-h-11 w-full rounded-xl border border-slate-200 px-3" /></label><label class="block"><span class="mb-1.5 block text-sm font-medium">Descripción</span><textarea rows="6" class="w-full rounded-xl border border-slate-200 p-3 text-sm leading-6">{selected.name}, una zapatilla versátil para el día a día. Disponible en varias tallas y con envío desde nuestra tienda.</textarea></label><label class="block"><span class="mb-1.5 block text-sm font-medium">Precio</span><input value={formatMoney(selected.price)} class="min-h-11 w-full rounded-xl border border-slate-200 px-3" /></label></div><div class="space-y-4"><label class="block"><span class="mb-1.5 block text-sm font-medium">SEO title</span><input value={`${selected.name} | Original Sneakers`} class="min-h-11 w-full rounded-xl border border-slate-200 px-3" /></label><label class="block"><span class="mb-1.5 block text-sm font-medium">Meta descripción</span><textarea rows="3" class="w-full rounded-xl border border-slate-200 p-3 text-sm">Compra {selected.name}. Consulta tallas disponibles y recibe tu pedido rápidamente.</textarea></label><div><p class="mb-2 text-sm font-medium">Imágenes seleccionadas</p><div class="grid grid-cols-4 gap-2">{[selected.tone, 'stone', 'blue'].map((tone) => <ProductThumbnail tone={tone as typeof selected.tone} size="lg" />)}</div></div></div></div>
+      <div class="mt-6 flex justify-end"><button type="button" class="min-h-12 rounded-xl bg-slate-950 px-5 text-sm font-semibold text-white">Publicar en Shopify</button></div>
+    </div>
+
+    <div data-channel-panel="whatsapp" class:list={['p-5 sm:p-6', activeChannel !== 'whatsapp' && 'hidden']}>
+      <div class="mb-5"><h3 class="text-lg font-semibold">WhatsApp</h3><p class="mt-1 text-sm text-slate-500">Listo para compartir con tus clientes.</p></div>
+      <div class="grid gap-5 lg:grid-cols-[18rem_minmax(0,1fr)]"><ProductThumbnail tone={selected.tone} size="lg" /><div><label class="block"><span class="mb-1.5 block text-sm font-medium">Texto</span><textarea data-copy-source rows="7" class="w-full rounded-xl border border-slate-200 p-3 text-sm leading-6">👟 {selected.name}\n\nTallas disponibles: {selected.sizes.join(', ')}\nPrecio: {formatMoney(selected.price)}\n\nEscríbenos para reservar tu talla.</textarea></label><div class="mt-3 flex flex-wrap gap-2"><button type="button" data-copy class="min-h-11 rounded-xl bg-slate-950 px-4 text-sm font-semibold text-white">Copiar texto</button><button type="button" class="min-h-11 rounded-xl border border-slate-200 px-4 text-sm font-semibold">Guardar imagen</button><button type="button" data-copy class="min-h-11 rounded-xl border border-slate-200 px-4 text-sm font-semibold">Copiar todo</button></div></div></div>
+    </div>
+
+    <div data-channel-panel="vinted" class:list={['p-5 sm:p-6', activeChannel !== 'vinted' && 'hidden']}>
+      <div class="mb-5"><h3 class="text-lg font-semibold">Vinted</h3><p class="mt-1 text-sm text-slate-500">Copia el contenido cuando vayas a publicar.</p></div>
+      <div class="grid gap-5 lg:grid-cols-2"><div class="space-y-4"><label class="block"><span class="mb-1.5 block text-sm font-medium">Título Vinted</span><input value={`${selected.name} nuevas`} class="min-h-11 w-full rounded-xl border border-slate-200 px-3" /></label><label class="block"><span class="mb-1.5 block text-sm font-medium">Descripción Vinted</span><textarea data-copy-source rows="6" class="w-full rounded-xl border border-slate-200 p-3 text-sm leading-6">{selected.name} nuevas, con caja original. Producto auténtico. Pregunta por disponibilidad de tu talla.</textarea></label><label class="block"><span class="mb-1.5 block text-sm font-medium">Precio</span><input value={formatMoney(selected.price)} class="min-h-11 w-full rounded-xl border border-slate-200 px-3" /></label></div><dl class="grid grid-cols-2 gap-4 rounded-xl bg-slate-50 p-4 text-sm"><div><dt class="text-slate-400">Marca</dt><dd class="mt-1 font-semibold">{selected.brand}</dd></div><div><dt class="text-slate-400">Tallas</dt><dd class="mt-1 font-semibold">{selected.sizes.join(', ')}</dd></div><div><dt class="text-slate-400">Estado</dt><dd class="mt-1 font-semibold">Nuevo con caja</dd></div><div><dt class="text-slate-400">Imágenes</dt><dd class="mt-1 font-semibold">3 seleccionadas</dd></div></dl></div>
+      <div class="mt-6 flex flex-wrap justify-end gap-2"><button type="button" data-copy class="min-h-11 rounded-xl border border-slate-200 px-4 text-sm font-semibold">Copiar contenido</button><button type="button" class="min-h-11 rounded-xl bg-slate-950 px-4 text-sm font-semibold text-white">Preparar publicación</button></div>
+    </div>
+  </section>
+
+  <p data-feedback class="fixed bottom-24 left-1/2 z-40 hidden -translate-x-1/2 rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white shadow-xl lg:bottom-6">Contenido copiado</p>
+
+  <script>
+    document.querySelector<HTMLSelectElement>('[data-product-select]')?.addEventListener('change', (event) => { window.location.search = `?producto=${(event.target as HTMLSelectElement).value}`; });
+    const tabs = Array.from(document.querySelectorAll<HTMLElement>('[data-channel]'));
+    const panels = Array.from(document.querySelectorAll<HTMLElement>('[data-channel-panel]'));
+    tabs.forEach((tab) => tab.addEventListener('click', () => {
+      tabs.forEach((item) => { item.className = 'min-h-11 rounded-lg px-2 text-sm font-semibold capitalize text-slate-500'; item.setAttribute('aria-selected', 'false'); });
+      tab.className = 'min-h-11 rounded-lg bg-white px-2 text-sm font-semibold capitalize text-slate-950 shadow-sm'; tab.setAttribute('aria-selected', 'true');
+      panels.forEach((panel) => panel.classList.toggle('hidden', panel.dataset.channelPanel !== tab.dataset.channel));
+    }));
+    document.querySelector('[data-regenerate]')?.addEventListener('click', (event) => { (event.currentTarget as HTMLElement).textContent = 'Plantilla actualizada ✓'; });
+    document.querySelectorAll('[data-copy]').forEach((button) => button.addEventListener('click', async () => {
+      const panel = (button as HTMLElement).closest<HTMLElement>('[data-channel-panel]');
+      const value = panel?.querySelector<HTMLTextAreaElement>('[data-copy-source]')?.value ?? '';
+      try { await navigator.clipboard.writeText(value); } catch { /* La demo sigue mostrando confirmación. */ }
+      const feedback = document.querySelector<HTMLElement>('[data-feedback]'); feedback?.classList.remove('hidden'); window.setTimeout(() => feedback?.classList.add('hidden'), 1600);
+    }));
+    if (new URLSearchParams(window.location.search).get('panel') === 'imagenes') document.querySelector('#image-generator')?.scrollIntoView({ behavior: 'smooth' });
+  </script>
+</AdminLayout>
