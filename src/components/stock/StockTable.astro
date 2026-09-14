@@ -1,10 +1,10 @@
 ---
-import type { MockProduct } from '../../lib/mock';
-import { formatMoney } from '../../lib/mock';
+import type { InventoryProductListItem } from '../../lib/inventory/types.ts';
+import { formatMoney } from '../../lib/inventory/queries.ts';
 import ActionMenu from '../ui/ActionMenu.astro';
 import ProductThumbnail from '../ui/ProductThumbnail.astro';
 import StatusBadge from '../ui/StatusBadge.astro';
-interface Props { products: MockProduct[]; }
+interface Props { products: InventoryProductListItem[]; }
 const { products } = Astro.props;
 ---
 
@@ -13,19 +13,19 @@ const { products } = Astro.props;
     <thead><tr class="border-b border-slate-200 bg-slate-50/80 text-xs font-semibold text-slate-500"><th class="w-[29%] px-5 py-3">Producto</th><th class="w-[13%] px-2 py-3">Referencia</th><th class="w-[15%] px-2 py-3">Tallas</th><th class="w-[10%] px-2 py-3">Stock</th><th class="w-[10%] px-2 py-3">PVP</th><th class="w-[11%] px-2 py-3">Estado</th><th class="w-[12%] px-2 py-3">Shopify</th><th class="w-14 px-2 py-3"><span class="sr-only">Acciones</span></th></tr></thead>
     <tbody class="divide-y divide-slate-100">
       {products.map((product) => <tr class="group hover:bg-slate-50/70">
-        <td class="px-5 py-3"><a href={`/stock/${product.id}`} class="flex min-w-0 items-center gap-3 rounded-lg focus-visible:outline-2 focus-visible:outline-blue-600"><ProductThumbnail tone={product.tone} size="sm" /><span class="min-w-0"><span class="block truncate font-semibold">{product.name}</span><span class="mt-0.5 block text-xs text-slate-500">{product.brand}</span></span></a></td>
+        <td class="px-5 py-3"><a href={`/stock/${product.id}`} class="flex min-w-0 items-center gap-3 rounded-lg focus-visible:outline-2 focus-visible:outline-blue-600"><ProductThumbnail imageUrl={product.imageUrl} alt={product.name} size="sm" /><span class="min-w-0"><span class="block truncate font-semibold">{product.model}</span><span class="mt-0.5 block truncate text-xs text-slate-500">{product.brand}{product.colorway ? ` · ${product.colorway}` : ''}</span></span></a></td>
         <td class="px-2 py-3 font-medium text-slate-600">{product.reference}</td>
         <td class="px-2 py-3 text-xs font-medium text-slate-600">{product.sizes.slice(0, 4).join(' · ')}{product.sizes.length > 4 ? '…' : ''}</td>
-        <td class="px-2 py-3 font-semibold tabular-nums">{product.stock} <span class="font-normal text-slate-400">pares</span></td>
-        <td class="px-2 py-3 font-semibold tabular-nums">{formatMoney(product.price)}</td>
-        <td class="px-2 py-3"><StatusBadge status={product.status} compact /></td>
+        <td class="px-2 py-3 font-semibold tabular-nums">{product.stock} <span class="font-normal text-slate-400">uds.</span></td>
+        <td class="px-2 py-3 font-semibold tabular-nums">{formatMoney(product.priceCents)}</td>
+        <td class="px-2 py-3"><StatusBadge status={product.stateLabel} compact /></td>
         <td class="px-2 py-3"><StatusBadge status={product.shopifyStatus} compact /></td>
         <td class="px-2 py-3"><ActionMenu label={`Acciones para ${product.name}`}>
           <a href={`/stock/${product.id}`} class="block min-h-11 rounded-lg px-3 py-3 font-medium hover:bg-slate-50">Ver / editar</a>
-          <button type="button" data-stock-open data-product={product.name} data-size={product.sizes[0]} data-quantity={product.variants[0]?.quantity ?? 0} class="block min-h-11 w-full rounded-lg px-3 text-left hover:bg-slate-50">Ajustar stock</button>
+          <button type="button" data-stock-open data-product={product.name} data-variant-id={product.variants[0]?.id} data-location-id={product.variants[0]?.locationId} data-size={product.sizes[0]} data-quantity={product.variants[0]?.quantity ?? 0} class="block min-h-11 w-full rounded-lg px-3 text-left hover:bg-slate-50">Ajustar stock</button>
           <a href={`/contenido?producto=${product.id}&panel=imagenes`} class="block min-h-11 rounded-lg px-3 py-3 hover:bg-slate-50">Crear imágenes</a>
           <a href={`/contenido?producto=${product.id}&canal=shopify`} class="block min-h-11 rounded-lg px-3 py-3 hover:bg-slate-50">Publicar / actualizar Shopify</a>
-          <button type="button" data-archive-open data-product={product.name} class="block min-h-11 w-full rounded-lg px-3 text-left text-rose-700 hover:bg-rose-50">Dar de baja</button>
+          <button type="button" data-archive-open data-product-id={product.id} data-product={product.name} data-stock={product.stock} class="block min-h-11 w-full rounded-lg px-3 text-left text-rose-700 hover:bg-rose-50">Dar de baja</button>
         </ActionMenu></td>
       </tr>)}
     </tbody>

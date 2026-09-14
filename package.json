@@ -12,6 +12,8 @@
     "db:health": "node --env-file-if-exists=.env --experimental-strip-types scripts/db.ts health",
     "db:migrate": "node --env-file-if-exists=.env --experimental-strip-types scripts/db.ts migrate",
     "db:status": "node --env-file-if-exists=.env --experimental-strip-types scripts/db.ts status",
+    "stock:importar": "node --env-file-if-exists=.env --experimental-strip-types scripts/importar-stock-inicial.ts",
+    "test": "node --expose-gc --experimental-strip-types --test tests/stock-import.test.ts tests/inventory.test.ts",
     "preview": "astro preview",
     "astro": "astro"
   },
@@ -20,7 +22,9 @@
     "@libsql/client": "^0.17.4",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.2.10",
-    "tailwindcss": "^4.3.3"
+    "tailwindcss": "^4.3.3",
+    "xlsx": "^0.18.5",
+    "zod": "^4.6.5"
   },
   "allowScripts": {
     "esbuild": true

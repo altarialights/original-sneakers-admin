@@ -1,4 +1,5 @@
-import { createClient, type Client } from '@libsql/client';
+import type { Client } from '@libsql/client';
+import { createClient } from '@libsql/client/web';
 
 export interface DatabaseCredentials {
   url: string;
@@ -21,9 +22,15 @@ export class DatabaseOperationError extends Error {
 
 let clientPromise: Promise<Client> | undefined;
 
-function readCredentials(environment: NodeJS.ProcessEnv = process.env): DatabaseCredentials {
-  const url = environment.TURSO_DATABASE_URL?.trim();
-  const authToken = environment.TURSO_AUTH_TOKEN?.trim();
+async function readCredentials(environment: NodeJS.ProcessEnv = process.env): Promise<DatabaseCredentials> {
+  let url = environment.TURSO_DATABASE_URL?.trim();
+  let authToken = environment.TURSO_AUTH_TOKEN?.trim();
+
+  if (!url || !authToken) {
+    const { getSecret } = await import('astro:env/server');
+    url ||= getSecret('TURSO_DATABASE_URL')?.trim();
+    authToken ||= getSecret('TURSO_AUTH_TOKEN')?.trim();
+  }
 
   if (!url || !authToken) {
     throw new DatabaseConfigurationError(
@@ -35,7 +42,7 @@ function readCredentials(environment: NodeJS.ProcessEnv = process.env): Database
 }
 
 async function initializeClient(): Promise<Client> {
-  const credentials = readCredentials();
+  const credentials = await readCredentials();
   const client = createClient({
     url: credentials.url,
     authToken: credentials.authToken,

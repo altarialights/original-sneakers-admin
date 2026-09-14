@@ -1,40 +1,41 @@
 ---
 import Icon from '../ui/Icon.astro';
-const filters = [
-  { label: 'Marca', options: ['Todas', 'Nike', 'Adidas', 'Jordan'] },
-  { label: 'Talla', options: ['Todas', '40', '41', '42', '42.5', '43', '44'] },
-  { label: 'Estado', options: ['Todos', 'Disponible', 'Revisar', 'Sin stock'] },
-  { label: 'Tipo', options: ['Todos', 'Calzado', 'Ropa', 'Accesorio'] },
-  { label: 'Stock', options: ['Con y sin stock', 'Con stock', 'Sin stock'] }
+import type { InventoryFilterOptions, InventoryListFilters } from '../../lib/inventory/types.ts';
+interface Props { options: InventoryFilterOptions; current: InventoryListFilters; }
+const { options, current } = Astro.props;
+const brands = options.brands.map((value) => { const [key, label] = value.split('\t'); return { key, label }; });
+const fields = [
+  { name: 'marca', label: 'Marca', value: current.brand ?? '', options: [{ value: '', label: 'Todas' }, ...brands.map((brand) => ({ value: brand.key, label: brand.label }))] },
+  { name: 'talla', label: 'Talla', value: current.size ?? '', options: [{ value: '', label: 'Todas' }, ...options.sizes.map((size) => ({ value: size, label: size }))] },
+  { name: 'estado', label: 'Estado', value: current.state ?? '', options: [{ value: '', label: 'Todos' }, { value: 'BORRADOR', label: 'Borrador' }, { value: 'ACTIVO', label: 'Activo' }, { value: 'ARCHIVADO', label: 'De baja' }] },
+  { name: 'tipo', label: 'Tipo', value: current.type ?? '', options: [{ value: '', label: 'Todos' }, { value: 'CALZADO', label: 'Calzado' }, { value: 'ROPA', label: 'Ropa' }, { value: 'ACCESORIO', label: 'Accesorio' }, { value: 'OTRO', label: 'Otro' }] },
+  { name: 'stock', label: 'Stock', value: current.stock ?? '', options: [{ value: '', label: 'Con y sin stock' }, { value: 'con', label: 'Con stock' }, { value: 'sin', label: 'Sin stock' }] }
 ];
 ---
 
 <div>
-  <div class="hidden flex-wrap items-center gap-2 md:flex">
-    {filters.map((filter) => <label><span class="sr-only">{filter.label}</span><select class="min-h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-600 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10">{filter.options.map((option) => <option>{option}</option>)}</select></label>)}
-    <button type="button" class="min-h-11 rounded-xl px-3 text-sm font-medium text-slate-500 hover:bg-slate-100">Limpiar</button>
-  </div>
-
+  <form method="get" class="hidden flex-wrap items-center gap-2 md:flex">
+    {current.search && <input type="hidden" name="q" value={current.search} />}
+    {fields.map((field) => <label><span class="sr-only">{field.label}</span><select name={field.name} class="min-h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-600 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10">{field.options.map((option) => <option value={option.value} selected={option.value === field.value}>{option.label}</option>)}</select></label>)}
+    <button type="submit" class="min-h-11 rounded-xl bg-slate-950 px-4 text-sm font-semibold text-white">Aplicar</button>
+    <a href="/stock" class="grid min-h-11 place-items-center rounded-xl px-3 text-sm font-medium text-slate-500 hover:bg-slate-100">Limpiar</a>
+  </form>
   <button type="button" data-filter-open class="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 md:hidden"><Icon name="filter" class="size-[18px]" />Filtrar productos</button>
   <div id="filter-drawer" class="fixed inset-0 z-50 hidden" aria-hidden="true">
     <button type="button" data-filter-close class="absolute inset-0 bg-slate-950/35" aria-label="Cerrar filtros"></button>
     <section class="absolute inset-x-0 bottom-0 max-h-[88vh] overflow-y-auto rounded-t-3xl bg-white p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-2xl" aria-labelledby="filter-title">
       <div class="flex items-center justify-between"><div><h2 id="filter-title" class="text-lg font-semibold">Filtros</h2><p class="mt-1 text-sm text-slate-500">Encuentra el producto rápidamente.</p></div><button type="button" data-filter-close class="grid size-11 place-items-center rounded-xl text-slate-500" aria-label="Cerrar filtros"><Icon name="close" /></button></div>
-      <div class="mt-6 grid grid-cols-2 gap-4">
-        {filters.map((filter, index) => <label class:list={[index === 4 ? 'col-span-2' : '']}><span class="mb-1.5 block text-sm font-medium text-slate-700">{filter.label}</span><select class="min-h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm">{filter.options.map((option) => <option>{option}</option>)}</select></label>)}
-      </div>
-      <div class="mt-7 grid grid-cols-2 gap-2"><button type="button" class="min-h-12 rounded-xl border border-slate-200 text-sm font-semibold">Limpiar</button><button type="button" data-filter-close class="min-h-12 rounded-xl bg-slate-950 text-sm font-semibold text-white">Ver 5 productos</button></div>
+      <form method="get" class="mt-6">
+        {current.search && <input type="hidden" name="q" value={current.search} />}
+        <div class="grid grid-cols-2 gap-4">{fields.map((field, index) => <label class:list={[index === 4 ? 'col-span-2' : '']}><span class="mb-1.5 block text-sm font-medium text-slate-700">{field.label}</span><select name={field.name} class="min-h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm">{field.options.map((option) => <option value={option.value} selected={option.value === field.value}>{option.label}</option>)}</select></label>)}</div>
+        <div class="mt-7 grid grid-cols-2 gap-2"><a href="/stock" class="grid min-h-12 place-items-center rounded-xl border border-slate-200 text-sm font-semibold">Limpiar</a><button type="submit" class="min-h-12 rounded-xl bg-slate-950 text-sm font-semibold text-white">Ver productos</button></div>
+      </form>
     </section>
   </div>
 </div>
-
 <script>
   const drawer = document.querySelector<HTMLElement>('#filter-drawer');
-  const setOpen = (open: boolean) => {
-    drawer?.classList.toggle('hidden', !open);
-    drawer?.setAttribute('aria-hidden', String(!open));
-    document.body.classList.toggle('overflow-hidden', open);
-  };
+  const setOpen = (open: boolean) => { drawer?.classList.toggle('hidden', !open); drawer?.setAttribute('aria-hidden', String(!open)); document.body.classList.toggle('overflow-hidden', open); };
   document.querySelectorAll('[data-filter-open]').forEach((button) => button.addEventListener('click', () => setOpen(true)));
   document.querySelectorAll('[data-filter-close]').forEach((button) => button.addEventListener('click', () => setOpen(false)));
 </script>

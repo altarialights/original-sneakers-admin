@@ -43,5 +43,8 @@ export default defineConfig({
 
     vite: {
         plugins: [tailwindcss()],
+        ssr: {
+            noExternal: ["zod", "@libsql/client"],
+        },
     },
 });

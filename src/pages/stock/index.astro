@@ -8,7 +8,38 @@ import StatCard from '../../components/ui/StatCard.astro';
 import FilterBar from '../../components/stock/FilterBar.astro';
 import ProductMobileCard from '../../components/stock/ProductMobileCard.astro';
 import StockTable from '../../components/stock/StockTable.astro';
-import { mockProducts, mockStockStats } from '../../lib/mock';
+import { getFilterOptions, getInventoryStats, listProducts } from '../../lib/inventory/queries.ts';
+import type { InventoryListFilters, ProductState, ProductType } from '../../lib/inventory/types.ts';
+
+export const prerender = false;
+const param = (name: string) => Astro.url.searchParams.get(name)?.trim() ?? '';
+const state = param('estado');
+const type = param('tipo');
+const stock = param('stock');
+const filters: InventoryListFilters = {
+  search: param('q'),
+  brand: param('marca'),
+  size: param('talla'),
+  state: ['BORRADOR', 'ACTIVO', 'ARCHIVADO'].includes(state) ? state as ProductState : '',
+  type: ['CALZADO', 'ROPA', 'ACCESORIO', 'OTRO'].includes(type) ? type as ProductType : '',
+  stock: ['con', 'sin'].includes(stock) ? stock as 'con' | 'sin' : ''
+};
+let loadError = false;
+let products: Awaited<ReturnType<typeof listProducts>> = [];
+let stats = { activeProducts: 0, availableUnits: 0, outOfStockProducts: 0 };
+let filterOptions = { brands: [] as string[], sizes: [] as string[] };
+try {
+  [products, stats, filterOptions] = await Promise.all([listProducts(filters), getInventoryStats(), getFilterOptions()]);
+} catch (error) {
+  console.error('[inventory] No se pudo cargar el listado de stock.', error);
+  loadError = true;
+}
+const statCards = [
+  { label: 'Productos activos', value: String(stats.activeProducts) },
+  { label: 'Unidades disponibles', value: String(stats.availableUnits) },
+  { label: 'Sin stock', value: String(stats.outOfStockProducts), tone: 'danger' as const }
+];
+const success = param('success');
 ---
 
 <AdminLayout title="Stock" description="Gestiona tus productos y unidades disponibles.">
@@ -16,60 +47,72 @@ import { mockProducts, mockStockStats } from '../../lib/mock';
     <Fragment slot="actions"><Button href="/anadir" variant="primary" icon="plus">Añadir producto</Button></Fragment>
   </PageHeader>
 
-  <section class="mb-5 rounded-2xl border border-slate-200 bg-white px-5 py-4" aria-label="Resumen de stock">
-    <dl class="grid grid-cols-3 gap-4">{mockStockStats.map((stat) => <StatCard {...stat} tone={stat.tone === 'danger' ? 'danger' : 'default'} />)}</dl>
-  </section>
+  {success && <p class="mb-4 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800" role="status">{success}</p>}
+  {loadError ? <section class="rounded-2xl border border-rose-200 bg-white p-8 text-center"><h2 class="font-semibold">No hemos podido cargar el stock.</h2><a href={Astro.url.pathname + Astro.url.search} class="mt-4 inline-grid min-h-11 place-items-center rounded-xl bg-slate-950 px-4 text-sm font-semibold text-white">Reintentar</a></section> : <>
+    <section class="mb-5 rounded-2xl border border-slate-200 bg-white px-5 py-4" aria-label="Resumen de stock">
+      <dl class="grid grid-cols-3 gap-4">{statCards.map((stat) => <StatCard {...stat} />)}</dl>
+    </section>
 
-  <section class="space-y-3" aria-label="Buscar y filtrar productos">
-    <label class="relative block">
-      <span class="sr-only">Buscar productos</span>
-      <Icon name="search" class="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-slate-400" />
-      <input type="search" placeholder="Buscar modelo, referencia, UPC, talla..." class="min-h-12 w-full rounded-xl border border-slate-200 bg-white pl-12 pr-4 text-base outline-none placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10" />
-    </label>
-    <FilterBar />
-  </section>
+    <section class="space-y-3" aria-label="Buscar y filtrar productos">
+      <form method="get" class="relative block">
+        {filters.brand && <input type="hidden" name="marca" value={filters.brand} />}{filters.size && <input type="hidden" name="talla" value={filters.size} />}{filters.state && <input type="hidden" name="estado" value={filters.state} />}{filters.type && <input type="hidden" name="tipo" value={filters.type} />}{filters.stock && <input type="hidden" name="stock" value={filters.stock} />}
+        <label><span class="sr-only">Buscar productos</span><Icon name="search" class="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-slate-400" /><input name="q" value={filters.search} type="search" placeholder="Buscar marca, modelo, referencia, UPC, talla..." class="min-h-12 w-full rounded-xl border border-slate-200 bg-white pl-12 pr-24 text-base outline-none placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10" /></label>
+        <button class="absolute right-1.5 top-1.5 min-h-9 rounded-lg bg-slate-950 px-4 text-sm font-semibold text-white">Buscar</button>
+      </form>
+      <FilterBar options={filterOptions} current={filters} />
+    </section>
 
-  <section class="mt-5 overflow-visible rounded-2xl border border-slate-200 bg-white" aria-labelledby="product-list-title">
-    <header class="flex items-center justify-between border-b border-slate-200 px-4 py-4 sm:px-5">
-      <div><h2 id="product-list-title" class="font-semibold">Productos</h2><p class="mt-0.5 text-xs text-slate-500">5 productos · datos de muestra</p></div>
-      <span class="text-xs font-medium text-slate-400">Ordenados por nombre</span>
-    </header>
-    <StockTable products={mockProducts} />
-    <div class="lg:hidden">{mockProducts.map((product) => <ProductMobileCard product={product} />)}</div>
-  </section>
+    <section class="mt-5 overflow-visible rounded-2xl border border-slate-200 bg-white" aria-labelledby="product-list-title">
+      <header class="flex items-center justify-between border-b border-slate-200 px-4 py-4 sm:px-5"><div><h2 id="product-list-title" class="font-semibold">Productos</h2><p class="mt-0.5 text-xs text-slate-500">{products.length} producto{products.length === 1 ? '' : 's'} · datos de Turso</p></div><span class="text-xs font-medium text-slate-400">Ordenados por nombre</span></header>
+      {products.length > 0 ? <><StockTable products={products} /><div class="lg:hidden">{products.map((product) => <ProductMobileCard product={product} />)}</div></> : <div class="p-10 text-center"><p class="font-semibold">No hay productos que coincidan.</p><a href="/stock" class="mt-3 inline-block text-sm font-semibold text-blue-700">Limpiar búsqueda</a></div>}
+    </section>
+  </>}
 
-  <Modal id="adjust-stock" title="Ajustar stock" description="El cambio es solo una demostración y no se guardará.">
-    <p data-stock-product class="text-sm font-semibold"></p>
-    <p class="mt-1 text-sm text-slate-500">Talla <span data-stock-size class="font-semibold text-slate-700"></span></p>
-    <div class="mt-6"><p class="text-center text-xs font-medium text-slate-500">Cantidad actual</p><div class="mt-3 flex items-center justify-center gap-3"><button type="button" data-quantity-minus class="grid size-12 place-items-center rounded-xl border border-slate-200 text-xl font-medium">−</button><output data-stock-quantity class="grid size-14 place-items-center rounded-xl bg-slate-100 text-xl font-semibold tabular-nums">0</output><button type="button" data-quantity-plus class="grid size-12 place-items-center rounded-xl bg-slate-950 text-xl font-medium text-white">+</button></div></div>
-    <label class="mt-6 block"><span class="mb-1.5 block text-sm font-medium">Motivo</span><select class="min-h-12 w-full rounded-xl border border-slate-200 bg-white px-3"><option>Venta</option><option>Compra</option><option>Ajuste</option><option>Devolución</option></select></label>
-    <div class="mt-6 grid grid-cols-2 gap-2"><button type="button" data-dialog-close class="min-h-12 rounded-xl border border-slate-200 text-sm font-semibold">Cancelar</button><button type="button" data-dialog-close class="min-h-12 rounded-xl bg-slate-950 text-sm font-semibold text-white">Guardar</button></div>
+  <Modal id="adjust-stock" title="Ajustar stock" description="El cambio quedará registrado en el historial.">
+    <p data-stock-product class="text-sm font-semibold"></p><p class="mt-1 text-sm text-slate-500">Talla <span data-stock-size class="font-semibold text-slate-700"></span></p>
+    <p class="mt-5 rounded-xl bg-slate-50 p-3 text-sm">Cantidad actual: <strong data-stock-quantity>0</strong></p>
+    <label class="mt-4 block"><span class="mb-1.5 block text-sm font-medium">Motivo</span><select data-stock-reason class="min-h-12 w-full rounded-xl border border-slate-200 bg-white px-3"><option value="VENTA">Venta</option><option value="COMPRA">Compra / entrada</option><option value="AJUSTE">Ajuste</option><option value="DEVOLUCION">Devolución</option></select></label>
+    <label class="mt-4 block"><span class="mb-1.5 block text-sm font-medium">Cambio de unidades</span><input data-stock-delta type="number" step="1" value="-1" class="min-h-12 w-full rounded-xl border border-slate-200 px-3" /><span class="mt-1 block text-xs text-slate-500">Usa un valor negativo para restar y positivo para sumar.</span></label>
+    <p data-stock-error class="mt-3 hidden text-sm font-medium text-rose-700" role="alert"></p>
+    <div class="mt-6 grid grid-cols-2 gap-2"><button type="button" data-dialog-close class="min-h-12 rounded-xl border border-slate-200 text-sm font-semibold">Cancelar</button><button type="button" data-stock-save class="min-h-12 rounded-xl bg-slate-950 text-sm font-semibold text-white">Guardar</button></div>
   </Modal>
 
-  <Modal id="archive-product" title="Dar de baja producto" description="Este producto dejará de estar activo pero conservará su historial.">
-    <p data-archive-product class="rounded-xl bg-rose-50 p-3 text-sm font-semibold text-rose-800"></p>
-    <div class="mt-6 grid grid-cols-2 gap-2"><button type="button" data-dialog-close class="min-h-12 rounded-xl border border-slate-200 text-sm font-semibold">Cancelar</button><button type="button" data-dialog-close class="min-h-12 rounded-xl bg-rose-600 text-sm font-semibold text-white">Dar de baja</button></div>
+  <Modal id="archive-product" title="Dar de baja producto" description="El producto conservará todo su historial.">
+    <p data-archive-product class="rounded-xl bg-rose-50 p-3 text-sm font-semibold text-rose-800"></p><p data-archive-stock class="mt-3 text-sm text-slate-600"></p><p data-archive-error class="mt-3 hidden text-sm font-medium text-rose-700"></p>
+    <div class="mt-6 grid grid-cols-2 gap-2"><button type="button" data-dialog-close class="min-h-12 rounded-xl border border-slate-200 text-sm font-semibold">Cancelar</button><button type="button" data-archive-save class="min-h-12 rounded-xl bg-rose-600 text-sm font-semibold text-white">Dar de baja</button></div>
   </Modal>
 
   <script>
-    const stockDialog = document.querySelector<HTMLDialogElement>('#adjust-stock');
-    const archiveDialog = document.querySelector<HTMLDialogElement>('#archive-product');
-    const quantity = document.querySelector<HTMLOutputElement>('[data-stock-quantity]');
-    let currentQuantity = 0;
+    const request = async (url: string, options: RequestInit) => { const response = await fetch(url, { ...options, headers: { 'content-type': 'application/json' } }); const data = await response.json(); if (!response.ok) throw new Error(data.message ?? 'No hemos podido guardar los cambios.'); return data; };
+    let selectedVariant = ''; let selectedLocation = '';
     document.querySelectorAll<HTMLElement>('[data-stock-open]').forEach((button) => button.addEventListener('click', () => {
-      currentQuantity = Number(button.dataset.quantity ?? 0);
+      selectedVariant = button.dataset.variantId ?? ''; selectedLocation = button.dataset.locationId ?? '';
       document.querySelector<HTMLElement>('[data-stock-product]')!.textContent = button.dataset.product ?? '';
       document.querySelector<HTMLElement>('[data-stock-size]')!.textContent = button.dataset.size ?? '';
-      if (quantity) quantity.textContent = String(currentQuantity);
-      stockDialog?.showModal();
-      button.closest('details')?.removeAttribute('open');
+      document.querySelector<HTMLElement>('[data-stock-quantity]')!.textContent = button.dataset.quantity ?? '0';
+      document.querySelector<HTMLElement>('[data-stock-error]')?.classList.add('hidden');
+      document.querySelector<HTMLDialogElement>('#adjust-stock')?.showModal(); button.closest('details')?.removeAttribute('open');
     }));
-    document.querySelector('[data-quantity-minus]')?.addEventListener('click', () => { currentQuantity = Math.max(0, currentQuantity - 1); if (quantity) quantity.textContent = String(currentQuantity); });
-    document.querySelector('[data-quantity-plus]')?.addEventListener('click', () => { currentQuantity += 1; if (quantity) quantity.textContent = String(currentQuantity); });
+    const reason = document.querySelector<HTMLSelectElement>('[data-stock-reason]'); const delta = document.querySelector<HTMLInputElement>('[data-stock-delta]');
+    reason?.addEventListener('change', () => { if (!delta) return; const amount = Math.max(1, Math.abs(Number(delta.value) || 1)); delta.value = reason.value === 'VENTA' ? String(-amount) : String(amount); });
+    document.querySelector<HTMLElement>('[data-stock-save]')?.addEventListener('click', async (event) => {
+      const button = event.currentTarget as HTMLButtonElement; const error = document.querySelector<HTMLElement>('[data-stock-error]'); button.disabled = true; button.textContent = 'Guardando…';
+      try { await request(`/api/inventory/variants/${selectedVariant}/stock`, { method: 'POST', body: JSON.stringify({ locationId: selectedLocation, reason: reason?.value, delta: delta?.value }) }); window.location.assign('/stock?success=Stock+actualizado'); }
+      catch (cause) { if (error) { error.textContent = cause instanceof Error ? cause.message : 'No hemos podido actualizar el stock.'; error.classList.remove('hidden'); } }
+      finally { button.disabled = false; button.textContent = 'Guardar'; }
+    });
+    let selectedProduct = ''; let selectedProductStock = 0;
     document.querySelectorAll<HTMLElement>('[data-archive-open]').forEach((button) => button.addEventListener('click', () => {
+      selectedProduct = button.dataset.productId ?? ''; selectedProductStock = Number(button.dataset.stock ?? 0);
       document.querySelector<HTMLElement>('[data-archive-product]')!.textContent = button.dataset.product ?? '';
-      archiveDialog?.showModal();
-      button.closest('details')?.removeAttribute('open');
+      document.querySelector<HTMLElement>('[data-archive-stock]')!.textContent = selectedProductStock > 0 ? `Este producto todavía tiene ${selectedProductStock} unidades. Puedes cancelar o darlo de baja igualmente.` : 'Este producto no tiene unidades disponibles.';
+      document.querySelector<HTMLDialogElement>('#archive-product')?.showModal(); button.closest('details')?.removeAttribute('open');
     }));
+    document.querySelector<HTMLElement>('[data-archive-save]')?.addEventListener('click', async (event) => {
+      const button = event.currentTarget as HTMLButtonElement; const error = document.querySelector<HTMLElement>('[data-archive-error]'); button.disabled = true; button.textContent = 'Guardando…';
+      try { await request(`/api/inventory/products/${selectedProduct}/archive`, { method: 'POST', body: JSON.stringify({ force: selectedProductStock > 0 }) }); window.location.assign('/stock?success=Producto+dado+de+baja'); }
+      catch (cause) { if (error) { error.textContent = cause instanceof Error ? cause.message : 'No hemos podido dar de baja el producto.'; error.classList.remove('hidden'); } }
+      finally { button.disabled = false; button.textContent = 'Dar de baja'; }
+    });
   </script>
 </AdminLayout>
