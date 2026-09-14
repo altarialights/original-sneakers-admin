@@ -5,6 +5,7 @@ import { defineConfig, envField } from "astro/config";
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
+    output: "server",
     adapter: vercel(),
 
     env: {
