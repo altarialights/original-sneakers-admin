@@ -1,0 +1,632 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import PageHeader from '../../components/ui/PageHeader.astro';
+import StatusBadge from '../../components/ui/StatusBadge.astro';
+import { ANGLE_LABELS } from '../../lib/content/config.ts';
+import { publicSizeFacts } from '../../lib/content/formatters.ts';
+import { EMPTY_PUBLICATION_TEXTS, getProductContent, getPublicationProduct } from '../../lib/content/queries.ts';
+import { allowedAnglesFor } from '../../lib/content/schemas.ts';
+import { getProductDetail } from '../../lib/inventory/queries.ts';
+
+export const prerender = false;
+let loadError = false;
+let product: Awaited<ReturnType<typeof getPublicationProduct>> = null;
+let content: Awaited<ReturnType<typeof getProductContent>> = null;
+try {
+  if (Astro.params.id) {
+    const inventoryProduct = await getProductDetail(Astro.params.id);
+    if (inventoryProduct) {
+      [product, content] = await Promise.all([
+        getPublicationProduct(Astro.params.id),
+        getProductContent(Astro.params.id)
+      ]);
+    }
+  }
+} catch {
+  console.error('[content] No se pudo cargar el módulo de publicación.');
+  loadError = true;
+  Astro.response.status = 500;
+}
+if (!loadError && !product) Astro.response.status = 404;
+
+const typeLabels = { CALZADO: 'Calzado', ROPA: 'Ropa', ACCESORIO: 'Accesorio', OTRO: 'Otro' } as const;
+const genderLabels = { UNISEX: 'Unisex', HOMBRE: 'Hombre', MUJER: 'Mujer', NINO: 'Niño', NINA: 'Niña', DESCONOCIDO: 'Sin especificar' } as const;
+const genders = product ? [...new Set(product.variants.map((variant) => genderLabels[variant.gender]))].join(', ') : '';
+const texts = content?.texts ?? EMPTY_PUBLICATION_TEXTS;
+const imageCount = content?.images.length ?? 0;
+const angles = product ? allowedAnglesFor(product.type) : [];
+const visibleSizes = product ? publicSizeFacts(product) : [];
+const lateralReference = content?.references.find((asset) => asset.metadata.role === 'REFERENCIA_LATERAL') ?? null;
+const rearReference = content?.references.find((asset) => asset.metadata.role === 'REFERENCIA_TRASERA') ?? null;
+const referencesReady = product?.type !== 'CALZADO' || Boolean(lateralReference && rearReference);
+const textFields = [
+  { key: 'tituloComercial', label: 'Título comercial', rows: 1, help: 'Claro, atractivo y útil para vender.' },
+  { key: 'descripcionCompleta', label: 'Descripción completa', rows: 22, help: 'Incluye introducción, características, autenticidad, dato curioso solo si es seguro y envíos; lista para copiar y publicar.' },
+  { key: 'seoTitle', label: 'SEO title', rows: 1, help: 'Título natural para buscadores.' },
+  { key: 'metaDescription', label: 'Meta description', rows: 3, help: 'Resumen breve y atractivo para buscadores.' }
+] as const;
+---
+
+<AdminLayout title="Preparar publicación" description="Genera imágenes y textos del producto para dejarlo listo para publicar.">
+  {loadError ? (
+    <section class="mx-auto max-w-2xl rounded-2xl border border-rose-200 bg-white p-8 text-center">
+      <h1 class="text-xl font-semibold">No hemos podido cargar el contenido</h1>
+      <p class="mt-2 text-sm text-slate-500">Lo que ya estaba guardado no se ha perdido. Inténtalo de nuevo dentro de unos momentos.</p>
+      <a href={Astro.url.pathname} class="mt-5 inline-grid min-h-11 place-items-center rounded-xl bg-slate-950 px-4 text-sm font-semibold text-white">Reintentar</a>
+    </section>
+  ) : !product ? (
+    <section class="mx-auto max-w-2xl rounded-2xl border border-slate-200 bg-white p-8 text-center">
+      <h1 class="text-xl font-semibold">Producto no encontrado</h1>
+      <p class="mt-2 text-sm text-slate-500">El producto no existe o el enlace no es correcto.</p>
+      <a href="/stock" class="mt-5 inline-grid min-h-11 place-items-center rounded-xl bg-slate-950 px-4 text-sm font-semibold text-white">Volver al stock</a>
+    </section>
+  ) : (
+    <main data-content-page data-product-id={product.id} data-product-type={product.type} data-product-name={`${product.brand} ${product.model}`}>
+      <PageHeader title="Preparar publicación" description="Genera imágenes y textos del producto para dejarlo listo para publicar." backHref="/stock" backLabel="Volver al stock" />
+
+      <section class="mb-6 rounded-3xl border border-slate-200 bg-white p-5 sm:p-7">
+        <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          <div class="min-w-0">
+            <p class="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Producto real de inventario</p>
+            <h1 class="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{product.brand} {product.model}</h1>
+            <p class="mt-2 text-sm text-slate-500">{product.reference}{product.colorway ? ` · ${product.colorway}` : ''}</p>
+          </div>
+          <StatusBadge status={product.stateLabel} />
+        </div>
+        <dl class="mt-6 grid grid-cols-2 gap-x-5 gap-y-5 border-t border-slate-100 pt-6 text-sm sm:grid-cols-4 lg:grid-cols-7">
+          <div><dt class="text-xs text-slate-400">Marca</dt><dd class="mt-1 font-semibold">{product.brand}</dd></div>
+          <div><dt class="text-xs text-slate-400">Modelo</dt><dd class="mt-1 font-semibold">{product.model}</dd></div>
+          <div><dt class="text-xs text-slate-400">Referencia</dt><dd class="mt-1 font-semibold">{product.reference}</dd></div>
+          <div><dt class="text-xs text-slate-400">Color</dt><dd class="mt-1 font-semibold">{product.colorway ?? 'Sin especificar'}</dd></div>
+          <div><dt class="text-xs text-slate-400">Tipo</dt><dd class="mt-1 font-semibold">{typeLabels[product.type]}</dd></div>
+          <div><dt class="text-xs text-slate-400">Género</dt><dd class="mt-1 font-semibold">{genders || 'Sin especificar'}</dd></div>
+          <div><dt class="text-xs text-slate-400">Stock</dt><dd class="mt-1 font-semibold">{product.stock} unidades</dd></div>
+        </dl>
+        <div class="mt-5 flex flex-wrap gap-2">
+          {visibleSizes.map((variant) => (
+            <span class="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold">
+              {variant.label} · {variant.quantity} uds.
+            </span>
+          ))}
+        </div>
+      </section>
+
+      {product.type === 'CALZADO' && (
+        <section class="mb-6 rounded-3xl border border-slate-200 bg-white p-5 sm:p-7" id="referencias">
+          <header>
+            <p class="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Producto real</p>
+            <h2 class="mt-2 text-xl font-semibold">Referencias visuales del producto</h2>
+            <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-500">Sube una vista lateral y otra trasera de esta zapatilla. Se guardarán de forma privada y OpenAI las usará para respetar el producto real.</p>
+          </header>
+          <div class="mt-6 grid gap-4 sm:grid-cols-2">
+            {[
+              { role: 'REFERENCIA_LATERAL', title: 'Lateral de la zapatilla', asset: lateralReference },
+              { role: 'REFERENCIA_TRASERA', title: 'Parte trasera de la zapatilla', asset: rearReference }
+            ].map(({ role, title, asset }) => (
+              <article data-reference-card data-role={role} data-resource-id={asset?.id ?? ''} class="rounded-2xl border border-slate-200 p-4">
+                <div class="flex items-start justify-between gap-3">
+                  <div><h3 class="text-sm font-semibold">{title}</h3><p data-reference-status class={`mt-1 text-xs ${asset ? 'text-emerald-700' : 'text-slate-500'}`}>{asset ? 'Subida correctamente' : 'Pendiente de subir'}</p></div>
+                  <span data-reference-check class={`grid size-7 place-items-center rounded-full text-sm ${asset ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-400'}`}>{asset ? '✓' : '!'}</span>
+                </div>
+                <div class="mt-4 overflow-hidden rounded-xl border border-dashed border-slate-200 bg-slate-50">
+                  <img data-reference-preview src={asset ? `/api/content/assets/${encodeURIComponent(asset.id)}` : ''} alt={title} class={`aspect-[4/3] h-auto w-full object-cover ${asset ? '' : 'hidden'}`} />
+                  <div data-reference-empty class={`grid aspect-[4/3] place-items-center px-5 text-center text-xs leading-5 text-slate-400 ${asset ? 'hidden' : ''}`}>Selecciona una fotografía clara y completa.</div>
+                </div>
+                <div class="mt-4 flex items-center gap-4">
+                  <label class="inline-grid min-h-10 cursor-pointer place-items-center rounded-xl border border-slate-200 px-4 text-xs font-semibold">
+                    <span data-reference-upload-label>{asset ? 'Reemplazar' : 'Subir imagen'}</span>
+                    <input data-reference-input type="file" accept="image/jpeg,image/png,image/webp" class="sr-only" />
+                  </label>
+                  <button data-reference-remove type="button" class={`text-xs font-semibold text-rose-700 ${asset ? '' : 'hidden'}`}>Eliminar</button>
+                </div>
+              </article>
+            ))}
+          </div>
+          <p data-references-feedback class={`mt-4 text-sm font-medium ${referencesReady ? 'text-emerald-700' : 'text-amber-800'}`} aria-live="polite">
+            {referencesReady ? 'Referencias listas para generar imágenes fieles.' : 'Para generar imágenes fieles del producto, sube la referencia lateral y la trasera.'}
+          </p>
+        </section>
+      )}
+
+      <section class="rounded-3xl border border-slate-200 bg-white p-5 sm:p-7" id="imagenes">
+        <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Imágenes</p>
+            <h2 class="mt-2 text-xl font-semibold">Imágenes del producto</h2>
+            <p data-image-count class="mt-2 text-sm text-slate-500">{imageCount === 0 ? 'Sin imágenes preparadas' : `${imageCount} ${imageCount === 1 ? 'imagen preparada' : 'imágenes preparadas'}`}</p>
+          </div>
+          {content && <span class="text-xs text-slate-400">Biblioteca v{content.version} · {content.state.toLowerCase()}</span>}
+        </header>
+
+        <div data-image-gallery class={`mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4 ${imageCount === 0 ? 'hidden' : ''}`}>
+            {content?.images.map((image) => (
+              <figure data-gallery-asset={image.id} class="group overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+                <img src={`/api/content/assets/${encodeURIComponent(image.id)}`} alt={image.alt ?? `Imagen de ${product.brand} ${product.model}`} loading="lazy" class="aspect-square h-auto w-full object-cover" />
+                <figcaption class="px-3 py-2.5 text-xs text-slate-500">
+                  <span class="block">{ANGLE_LABELS[String(image.metadata.angle ?? '')] ?? 'Imagen de producto'}</span>
+                  <span class="mt-2 flex items-center gap-3 font-semibold">
+                    <button type="button" data-copy-image data-asset-id={image.id} class="text-slate-700 hover:text-slate-950">Copiar</button>
+                    <a href={`/api/content/assets/${encodeURIComponent(image.id)}?download=1`} class="text-slate-700 hover:text-slate-950">Descargar</a>
+                  </span>
+                </figcaption>
+              </figure>
+            ))}
+        </div>
+        <div data-generation-placeholders class="mt-6 hidden grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4"></div>
+
+        <form data-image-form data-references-required={product.type === 'CALZADO' ? 'true' : 'false'} class="mt-7 border-t border-slate-100 pt-7">
+          <div class="grid gap-6 xl:grid-cols-[10rem_minmax(0,1fr)]">
+            <label>
+              <span class="block text-sm font-semibold">Cantidad</span>
+              <span class="mt-1 block text-xs leading-5 text-slate-500">Entre 1 y 8 imágenes.</span>
+              <input name="quantity" type="number" min="1" max="8" value="3" required class="mt-3 min-h-12 w-full rounded-xl border border-slate-200 px-3 text-sm font-semibold" />
+            </label>
+            <fieldset>
+              <legend class="text-sm font-semibold">Ángulos</legend>
+              <p class="mt-1 text-xs leading-5 text-slate-500">Selecciona una o varias vistas. Se repartirán entre la cantidad elegida.</p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                {angles.map((angle, index) => (
+                  <label class="cursor-pointer">
+                    <input type="checkbox" name="angles" value={angle} checked={index < 3} class="peer sr-only" />
+                    <span class="inline-flex min-h-10 items-center rounded-full border border-slate-200 px-3 text-xs font-semibold text-slate-600 transition peer-checked:border-slate-950 peer-checked:bg-slate-950 peer-checked:text-white">{ANGLE_LABELS[angle]}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          </div>
+
+          <fieldset class="mt-7">
+            <legend class="text-sm font-semibold">Calidad de imagen</legend>
+            <div class="mt-3 grid gap-3 md:grid-cols-3">
+              {[
+                ['RAPIDA', 'Rápida', 'Más veloz, suficiente para revisión.'],
+                ['ESTANDAR', 'Estándar', 'Equilibrio entre coste y calidad.'],
+                ['PREMIUM', 'Premium', 'Mayor calidad visual, más lenta y costosa.']
+              ].map(([value, label, description]) => (
+                <label class="cursor-pointer">
+                  <input type="radio" name="quality" value={value} checked={value === 'ESTANDAR'} class="peer sr-only" />
+                  <span class="block rounded-2xl border border-slate-200 p-4 transition peer-checked:border-slate-950 peer-checked:ring-1 peer-checked:ring-slate-950">
+                    <strong class="block text-sm">{label}</strong><span class="mt-1 block text-xs leading-5 text-slate-500">{description}</span>
+                  </span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+            {imageCount === 0 ? (
+              <button type="submit" data-image-action="REPLACE" disabled={!referencesReady} class="min-h-12 rounded-xl bg-slate-950 px-5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-slate-300">Generar imágenes</button>
+            ) : (
+              <>
+                <button type="submit" data-image-action="REPLACE" disabled={!referencesReady} class="min-h-12 rounded-xl bg-slate-950 px-5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-slate-300">Regenerar imágenes</button>
+                <button type="submit" data-image-action="APPEND" disabled={!referencesReady} class="min-h-12 rounded-xl border border-slate-200 px-5 text-sm font-semibold disabled:cursor-not-allowed disabled:text-slate-300">Generar más imágenes</button>
+              </>
+            )}
+            <button type="submit" data-image-action="APPEND" data-retry-failed hidden class="min-h-12 rounded-xl border border-amber-300 bg-amber-50 px-5 text-sm font-semibold text-amber-900">Reintentar fallidas</button>
+            <p data-image-feedback class="text-sm text-slate-500" aria-live="polite"></p>
+          </div>
+        </form>
+      </section>
+
+      <section class="mt-6 rounded-3xl border border-slate-200 bg-white p-5 sm:p-7" id="textos">
+        <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Textos</p>
+            <h2 class="mt-2 text-xl font-semibold">Textos de publicación</h2>
+            <p class="mt-2 text-sm text-slate-500">{content?.hasTexts ? 'Textos disponibles' : 'Sin textos generados'}</p>
+          </div>
+          {content?.generator && <span class="text-xs text-slate-400">Última generación: {content.generator}</span>}
+        </header>
+
+        <form data-text-form class="mt-7 space-y-5">
+          {textFields.map((field) => (
+            <div class="rounded-2xl border border-slate-200 p-4 sm:p-5">
+              <div class="mb-3 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <label for={`content-${field.key}`} class="text-sm font-semibold">{field.label}</label>
+                {content?.hasTexts && <button type="button" data-generate-text data-field={field.key} class="self-start text-xs font-semibold text-blue-700">Regenerar bloque</button>}
+              </div>
+              {field.rows === 1 ? (
+                <input id={`content-${field.key}`} name={field.key} value={texts[field.key]} maxlength={field.key === 'tituloComercial' || field.key === 'seoTitle' ? 180 : undefined} class="min-h-12 w-full rounded-xl border border-slate-200 px-3 text-sm" />
+              ) : (
+                <textarea id={`content-${field.key}`} name={field.key} rows={field.rows} maxlength={field.key === 'metaDescription' ? 500 : 12000} class="w-full rounded-xl border border-slate-200 p-3 text-sm leading-6">{texts[field.key]}</textarea>
+              )}
+              <p class="mt-2 text-xs leading-5 text-slate-400">{field.help}</p>
+            </div>
+          ))}
+
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <button type="button" data-generate-text class="min-h-12 rounded-xl bg-slate-950 px-5 text-sm font-semibold text-white">{content?.hasTexts ? 'Regenerar textos' : 'Generar textos'}</button>
+            <button type="submit" class="min-h-12 rounded-xl border border-slate-200 px-5 text-sm font-semibold">Guardar cambios</button>
+            <p data-text-feedback class="text-sm text-slate-500" aria-live="polite"></p>
+          </div>
+        </form>
+      </section>
+    </main>
+  )}
+
+  <script>
+    const page = document.querySelector<HTMLElement>('[data-content-page]');
+    const productId = page?.dataset.productId;
+
+    async function apiRequest<T extends Record<string, unknown>>(url: string, method: 'POST' | 'PATCH', body: unknown): Promise<T> {
+      const response = await fetch(url, {
+        method,
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await response.json() as T & { ok?: boolean; message?: string };
+      if (!response.ok || !data.ok) throw new Error(data.message ?? 'No hemos podido completar la acción.');
+      return data;
+    }
+
+    function setBusy(form: HTMLFormElement, busy: boolean): void {
+      form.querySelectorAll<HTMLButtonElement | HTMLInputElement | HTMLSelectElement>('button, input, select').forEach((control) => { control.disabled = busy; });
+      form.setAttribute('aria-busy', String(busy));
+    }
+
+    interface BrowserAsset {
+      id: string;
+      mimeType: string;
+      alt: string | null;
+      viewUrl: string;
+      metadata: { angle?: string | null; role?: string | null };
+    }
+    interface BrowserContent { images: BrowserAsset[]; references: BrowserAsset[]; }
+
+    const referenceCards = [...document.querySelectorAll<HTMLElement>('[data-reference-card]')];
+    const referencesFeedback = document.querySelector<HTMLElement>('[data-references-feedback]');
+    const referenceReady = (): boolean => referenceCards.length === 0 || referenceCards.every((card) => Boolean(card.dataset.resourceId));
+    const updateReferenceGate = (): void => {
+      const ready = referenceReady();
+      document.querySelectorAll<HTMLButtonElement>('[data-image-action]').forEach((button) => {
+        if (button.dataset.retryFailed === undefined) button.disabled = !ready;
+      });
+      if (referencesFeedback) {
+        referencesFeedback.textContent = ready
+          ? 'Referencias listas para generar imágenes fieles.'
+          : 'Para generar imágenes fieles del producto, sube la referencia lateral y la trasera.';
+        referencesFeedback.className = ready ? 'mt-4 text-sm font-medium text-emerald-700' : 'mt-4 text-sm font-medium text-amber-800';
+      }
+    };
+
+    function applyReferenceContent(content: BrowserContent): void {
+      for (const card of referenceCards) {
+        const asset = content.references.find((candidate) => candidate.metadata.role === card.dataset.role);
+        card.dataset.resourceId = asset?.id ?? '';
+        const preview = card.querySelector<HTMLImageElement>('[data-reference-preview]')!;
+        const empty = card.querySelector<HTMLElement>('[data-reference-empty]')!;
+        const status = card.querySelector<HTMLElement>('[data-reference-status]')!;
+        const check = card.querySelector<HTMLElement>('[data-reference-check]')!;
+        const remove = card.querySelector<HTMLButtonElement>('[data-reference-remove]')!;
+        const label = card.querySelector<HTMLElement>('[data-reference-upload-label]')!;
+        if (asset) {
+          preview.src = asset.viewUrl;
+          preview.classList.remove('hidden');
+          empty.classList.add('hidden');
+          remove.classList.remove('hidden');
+          label.textContent = 'Reemplazar';
+          status.textContent = 'Subida correctamente';
+          status.className = 'mt-1 text-xs text-emerald-700';
+          check.textContent = '✓';
+          check.className = 'grid size-7 place-items-center rounded-full bg-emerald-50 text-sm text-emerald-700';
+        } else {
+          preview.removeAttribute('src');
+          preview.classList.add('hidden');
+          empty.classList.remove('hidden');
+          remove.classList.add('hidden');
+          label.textContent = 'Subir imagen';
+          status.textContent = 'Pendiente de subir';
+          status.className = 'mt-1 text-xs text-slate-500';
+          check.textContent = '!';
+          check.className = 'grid size-7 place-items-center rounded-full bg-slate-100 text-sm text-slate-400';
+        }
+      }
+      updateReferenceGate();
+    }
+
+    referenceCards.forEach((card) => {
+      const input = card.querySelector<HTMLInputElement>('[data-reference-input]')!;
+      const status = card.querySelector<HTMLElement>('[data-reference-status]')!;
+      input.addEventListener('change', async () => {
+        const file = input.files?.[0];
+        if (!file || !productId || !card.dataset.role) return;
+        const preview = card.querySelector<HTMLImageElement>('[data-reference-preview]')!;
+        const empty = card.querySelector<HTMLElement>('[data-reference-empty]')!;
+        const previousSrc = preview.getAttribute('src');
+        const hadStoredReference = Boolean(card.dataset.resourceId);
+        const localUrl = URL.createObjectURL(file);
+        preview.src = localUrl;
+        preview.classList.remove('hidden');
+        empty.classList.add('hidden');
+        status.textContent = 'Subiendo referencia…';
+        status.className = 'mt-1 text-xs text-blue-700';
+        input.disabled = true;
+        try {
+          const body = new FormData();
+          body.set('file', file);
+          const response = await fetch(`/api/content/products/${encodeURIComponent(productId)}/references/${card.dataset.role}`, { method: 'POST', body });
+          const data = await response.json() as { ok?: boolean; message?: string; content?: BrowserContent };
+          if (!response.ok || !data.ok || !data.content) throw new Error(data.message ?? 'No pudimos guardar la referencia.');
+          applyReferenceContent(data.content);
+        } catch (error) {
+          if (hadStoredReference && previousSrc) {
+            preview.src = previousSrc;
+          } else {
+            preview.removeAttribute('src');
+            preview.classList.add('hidden');
+            empty.classList.remove('hidden');
+          }
+          status.textContent = error instanceof Error ? error.message : 'No pudimos guardar la referencia.';
+          status.className = 'mt-1 text-xs font-medium text-rose-700';
+        } finally {
+          URL.revokeObjectURL(localUrl);
+          input.disabled = false;
+          input.value = '';
+        }
+      });
+      card.querySelector<HTMLButtonElement>('[data-reference-remove]')?.addEventListener('click', async (event) => {
+        if (!productId || !card.dataset.role || !(event.currentTarget instanceof HTMLButtonElement)) return;
+        event.currentTarget.disabled = true;
+        status.textContent = 'Eliminando referencia…';
+        try {
+          const response = await fetch(`/api/content/products/${encodeURIComponent(productId)}/references/${card.dataset.role}`, { method: 'DELETE' });
+          const data = await response.json() as { ok?: boolean; message?: string; content?: BrowserContent };
+          if (!response.ok || !data.ok || !data.content) throw new Error(data.message ?? 'No pudimos eliminar la referencia.');
+          applyReferenceContent(data.content);
+        } catch (error) {
+          status.textContent = error instanceof Error ? error.message : 'No pudimos eliminar la referencia.';
+          status.className = 'mt-1 text-xs font-medium text-rose-700';
+        } finally {
+          event.currentTarget.disabled = false;
+        }
+      });
+    });
+
+    const imageForm = document.querySelector<HTMLFormElement>('[data-image-form]');
+    const imageFeedback = imageForm?.querySelector<HTMLElement>('[data-image-feedback]');
+    const retryButton = imageForm?.querySelector<HTMLButtonElement>('[data-retry-failed]');
+    const gallery = document.querySelector<HTMLElement>('[data-image-gallery]');
+    const placeholders = document.querySelector<HTMLElement>('[data-generation-placeholders]');
+    const imageCountLabel = document.querySelector<HTMLElement>('[data-image-count]');
+    const quantityInput = imageForm?.querySelector<HTMLInputElement>('input[name="quantity"]');
+    const angleInputs = [...(imageForm?.querySelectorAll<HTMLInputElement>('input[name="angles"]') ?? [])];
+    let retryAngles: string[] = [];
+    let retryQuantity = 0;
+
+    angleInputs.forEach((input) => input.addEventListener('change', () => {
+      const selectedCount = angleInputs.filter((angleInput) => angleInput.checked).length;
+      if (quantityInput && selectedCount > 0) quantityInput.value = String(selectedCount);
+    }));
+
+    const angleLabel = (angle: string): string => angle.replaceAll('-', ' ');
+
+    function showSkeletons(quantity: number, angles: string[]): void {
+      if (!placeholders) return;
+      placeholders.replaceChildren();
+      placeholders.classList.remove('hidden');
+      placeholders.classList.add('grid');
+      for (let index = 0; index < quantity; index += 1) {
+        const angle = angles[index % angles.length];
+        const card = document.createElement('div');
+        card.className = 'overflow-hidden rounded-2xl border border-slate-200 bg-slate-50';
+        const pulse = document.createElement('div');
+        pulse.className = 'aspect-square animate-pulse bg-gradient-to-r from-slate-100 via-slate-200 to-slate-100';
+        const caption = document.createElement('p');
+        caption.className = 'px-3 py-3 text-xs font-medium text-slate-500';
+        caption.textContent = `Generando ${angleLabel(angle)}…`;
+        card.append(pulse, caption);
+        placeholders.append(card);
+      }
+    }
+
+    function makeFailureCard(angle: string): HTMLElement {
+      const card = document.createElement('div');
+      card.className = 'grid aspect-square content-center rounded-2xl border border-rose-200 bg-rose-50 p-4 text-center';
+      const message = document.createElement('p');
+      message.className = 'text-sm font-semibold text-rose-800';
+      message.textContent = `${angleLabel(angle)} no se pudo generar`;
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'mx-auto mt-3 text-xs font-semibold text-rose-800 underline';
+      button.textContent = 'Reintentar';
+      button.addEventListener('click', () => {
+        retryAngles = [angle];
+        retryQuantity = 1;
+        retryButton?.click();
+      });
+      card.append(message, button);
+      return card;
+    }
+
+    function renderGallery(assets: BrowserAsset[], failedAngles: string[] = []): void {
+      if (!gallery) return;
+      gallery.replaceChildren();
+      for (const asset of assets) {
+        const figure = document.createElement('figure');
+        figure.className = 'group overflow-hidden rounded-2xl border border-slate-200 bg-slate-50';
+        const image = document.createElement('img');
+        image.src = asset.viewUrl;
+        image.alt = asset.alt ?? `Imagen de ${page?.dataset.productName ?? 'producto'}`;
+        image.loading = 'lazy';
+        image.className = 'aspect-square h-auto w-full object-cover';
+        const caption = document.createElement('figcaption');
+        caption.className = 'px-3 py-2.5 text-xs text-slate-500';
+        const label = document.createElement('span');
+        label.className = 'block';
+        label.textContent = angleLabel(asset.metadata.angle ?? 'imagen de producto');
+        const actions = document.createElement('span');
+        actions.className = 'mt-2 flex items-center gap-3 font-semibold';
+        const copy = document.createElement('button');
+        copy.type = 'button';
+        copy.dataset.copyImage = '';
+        copy.dataset.assetId = asset.id;
+        copy.className = 'text-slate-700 hover:text-slate-950';
+        copy.textContent = 'Copiar';
+        const download = document.createElement('a');
+        download.href = `${asset.viewUrl}?download=1`;
+        download.className = 'text-slate-700 hover:text-slate-950';
+        download.textContent = 'Descargar';
+        actions.append(copy, download);
+        caption.append(label, actions);
+        figure.append(image, caption);
+        gallery.append(figure);
+      }
+      failedAngles.forEach((angle) => gallery.append(makeFailureCard(angle)));
+      gallery.classList.toggle('hidden', assets.length + failedAngles.length === 0);
+      if (imageCountLabel) imageCountLabel.textContent = assets.length === 0 ? 'Sin imágenes preparadas' : `${assets.length} imágenes preparadas`;
+    }
+
+    function appendFailureCards(failedAngles: string[]): void {
+      if (!gallery) return;
+      gallery.querySelectorAll('[data-failure-card]').forEach((card) => card.remove());
+      for (const angle of failedAngles) {
+        const card = makeFailureCard(angle);
+        card.dataset.failureCard = '';
+        gallery.append(card);
+      }
+      gallery.classList.remove('hidden');
+    }
+
+    async function copyRealImage(assetId: string): Promise<void> {
+      if (!navigator.clipboard || typeof ClipboardItem === 'undefined') throw new Error('Tu navegador no permite copiar imágenes. Puedes usar Descargar.');
+      const response = await fetch(`/api/content/assets/${encodeURIComponent(assetId)}`);
+      if (!response.ok) throw new Error('No pudimos obtener la imagen. Puedes usar Descargar.');
+      let blob = await response.blob();
+      if (typeof ClipboardItem.supports === 'function' && !ClipboardItem.supports(blob.type)) {
+        const bitmap = await createImageBitmap(blob);
+        const canvas = document.createElement('canvas');
+        canvas.width = bitmap.width;
+        canvas.height = bitmap.height;
+        canvas.getContext('2d')?.drawImage(bitmap, 0, 0);
+        bitmap.close();
+        blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob((value) => value ? resolve(value) : reject(new Error('No se pudo preparar la imagen.')), 'image/png'));
+      }
+      await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+    }
+
+    gallery?.addEventListener('click', async (event) => {
+      const button = event.target instanceof Element ? event.target.closest<HTMLButtonElement>('[data-copy-image]') : null;
+      if (!button?.dataset.assetId || !imageFeedback) return;
+      button.disabled = true;
+      try {
+        await copyRealImage(button.dataset.assetId);
+        imageFeedback.textContent = 'Imagen copiada';
+        imageFeedback.className = 'text-sm font-semibold text-emerald-700';
+      } catch (error) {
+        imageFeedback.textContent = error instanceof Error ? error.message : 'Tu navegador no permite copiar imágenes. Puedes usar Descargar.';
+        imageFeedback.className = 'text-sm font-semibold text-amber-800';
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    retryButton?.addEventListener('click', () => {
+      if (!imageForm || retryAngles.length === 0) return;
+      imageForm.querySelectorAll<HTMLInputElement>('input[name="angles"]').forEach((input) => {
+        input.checked = retryAngles.includes(input.value);
+      });
+      const quantity = imageForm.querySelector<HTMLInputElement>('input[name="quantity"]');
+      if (quantity) quantity.value = String(Math.min(8, retryQuantity));
+    });
+
+    imageForm?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!productId || imageForm.getAttribute('aria-busy') === 'true') return;
+      const submitter = (event as SubmitEvent).submitter as HTMLButtonElement | null;
+      const formData = new FormData(imageForm);
+      const feedback = imageForm.querySelector<HTMLElement>('[data-image-feedback]')!;
+      const selectedAngles = formData.getAll('angles').map(String);
+      if (imageForm.dataset.referencesRequired === 'true' && !referenceReady()) {
+        feedback.textContent = 'Para generar imágenes fieles del producto, sube la referencia lateral y la trasera.';
+        feedback.className = 'text-sm font-semibold text-amber-800';
+        return;
+      }
+      if (selectedAngles.length === 0) {
+        feedback.textContent = 'Selecciona al menos un ángulo.';
+        feedback.className = 'text-sm font-semibold text-rose-700';
+        return;
+      }
+      const quantity = Math.max(selectedAngles.length, Math.max(1, Math.min(8, Number(formData.get('quantity')))));
+      if (quantityInput) quantityInput.value = String(quantity);
+      setBusy(imageForm, true);
+      feedback.textContent = 'Preparando generación…';
+      feedback.className = 'text-sm font-semibold text-blue-700';
+      showSkeletons(quantity, selectedAngles);
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      feedback.textContent = `Generando ${quantity} ${quantity === 1 ? 'imagen' : 'imágenes'} y guardando los resultados…`;
+      try {
+        const data = await apiRequest<{ content?: BrowserContent; summary?: { message: string; saved: number; failed: number; failedAngles: string[] } }>(`/api/content/products/${encodeURIComponent(productId)}/images`, 'POST', {
+          quantity,
+          angles: selectedAngles,
+          quality: String(formData.get('quality')),
+          mode: submitter?.dataset.imageAction ?? 'REPLACE'
+        });
+        const summary = data.summary ?? { message: 'Imágenes preparadas.', saved: data.content?.images.length ?? 0, failed: 0, failedAngles: [] };
+        if (data.content) renderGallery(data.content.images, summary.failedAngles);
+        placeholders?.classList.add('hidden');
+        placeholders?.classList.remove('grid');
+        feedback.textContent = summary.failed ? `${summary.saved} de ${quantity} imágenes preparadas.` : 'Imágenes preparadas';
+        feedback.className = summary.failed ? 'text-sm font-semibold text-amber-800' : 'text-sm font-semibold text-emerald-700';
+        retryAngles = [...new Set(summary.failedAngles)];
+        retryQuantity = summary.failed;
+        if (retryButton) {
+          retryButton.hidden = summary.failed === 0;
+          retryButton.textContent = `Reintentar ${summary.failed} ${summary.failed === 1 ? 'vista fallida' : 'vistas fallidas'}`;
+        }
+      } catch (error) {
+        placeholders?.classList.add('hidden');
+        placeholders?.classList.remove('grid');
+        appendFailureCards(Array.from({ length: quantity }, (_, index) => selectedAngles[index % selectedAngles.length]));
+        feedback.textContent = error instanceof Error ? error.message : 'No hemos podido generar las imágenes.';
+        feedback.className = 'text-sm font-semibold text-rose-700';
+      } finally {
+        setBusy(imageForm, false);
+        updateReferenceGate();
+      }
+    });
+
+    const textForm = document.querySelector<HTMLFormElement>('[data-text-form]');
+    const textFeedback = textForm?.querySelector<HTMLElement>('[data-text-feedback]');
+    document.querySelectorAll<HTMLButtonElement>('[data-generate-text]').forEach((button) => {
+      button.addEventListener('click', async () => {
+        if (!productId || !textForm || !textFeedback) return;
+        setBusy(textForm, true);
+        textFeedback.textContent = button.dataset.field ? 'Regenerando este bloque…' : 'Generando y guardando textos…';
+        textFeedback.className = 'text-sm font-semibold text-blue-700';
+        try {
+          await apiRequest(`/api/content/products/${encodeURIComponent(productId)}/texts`, 'POST', { field: button.dataset.field ?? null });
+          textFeedback.textContent = 'Textos guardados correctamente. Actualizando…';
+          textFeedback.className = 'text-sm font-semibold text-emerald-700';
+          window.setTimeout(() => window.location.reload(), 400);
+        } catch (error) {
+          textFeedback.textContent = error instanceof Error ? error.message : 'No hemos podido generar los textos.';
+          textFeedback.className = 'text-sm font-semibold text-rose-700';
+          setBusy(textForm, false);
+        }
+      });
+    });
+
+    textForm?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!productId || !textFeedback) return;
+      const formData = new FormData(textForm);
+      const editableFields = [
+        'tituloComercial', 'descripcionCompleta', 'seoTitle', 'metaDescription'
+      ];
+      const editableTexts = Object.fromEntries(editableFields.map((field) => [field, String(formData.get(field) ?? '')]));
+      setBusy(textForm, true);
+      textFeedback.textContent = 'Guardando cambios…';
+      textFeedback.className = 'text-sm font-semibold text-blue-700';
+      try {
+        await apiRequest(`/api/content/products/${encodeURIComponent(productId)}/texts`, 'PATCH', editableTexts);
+        textFeedback.textContent = 'Cambios guardados.';
+        textFeedback.className = 'text-sm font-semibold text-emerald-700';
+      } catch (error) {
+        textFeedback.textContent = error instanceof Error ? error.message : 'No hemos podido guardar los cambios.';
+        textFeedback.className = 'text-sm font-semibold text-rose-700';
+      } finally {
+        setBusy(textForm, false);
+      }
+    });
+  </script>
+</AdminLayout>

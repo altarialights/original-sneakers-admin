@@ -12,6 +12,7 @@ import {
   canonicalProductKey,
   locationCode,
   normalizeKey,
+  normalizeProductReference,
   normalizeText,
   parseSize,
   variantSignature
@@ -65,7 +66,7 @@ async function resolveLocation(tx: Transaction, name: string): Promise<{ id: str
 function productValues(input: ProductFieldsInput) {
   const brand = normalizeText(input.brand);
   const model = normalizeText(input.model);
-  const reference = normalizeText(input.reference);
+  const reference = normalizeProductReference(input.reference);
   const colorway = normalizeText(input.colorway) || null;
   const key = canonicalProductKey({ brand, model, reference, colorway });
   return {

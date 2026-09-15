@@ -89,14 +89,16 @@ export async function listProducts(
       COALESCE(SUM(n.cantidad), 0) AS cantidad_variante,
       (SELECT sn.ubicacion_id FROM niveles_inventario sn WHERE sn.variante_id = v.id ORDER BY sn.cantidad DESC LIMIT 1) AS ubicacion_principal_id,
       (
-        SELECT r.uri_almacenamiento
+        SELECT r.id
         FROM biblioteca_contenido b
         JOIN recursos_contenido r ON r.biblioteca_contenido_id = b.id
         WHERE b.producto_id = p.id AND r.tipo = 'IMAGEN'
           AND r.estado NOT IN ('ARCHIVADO', 'RECHAZADO')
+          AND r.archivado_en_ms IS NULL
+          AND json_extract(r.metadata_generacion_json, '$.role') IS NULL
         ORDER BY CASE r.estado WHEN 'APROBADO' THEN 0 ELSE 1 END, r.posicion
         LIMIT 1
-      ) AS imagen_url
+      ) AS imagen_id
     FROM productos p
     JOIN variantes_producto v ON v.producto_id = p.id AND v.archivado_en_ms IS NULL
     LEFT JOIN niveles_inventario n ON n.variante_id = v.id
@@ -127,7 +129,7 @@ export async function listProducts(
         sizes: [],
         stock: 0,
         priceCents: pvp,
-        imageUrl: row.imagen_url === null ? null : String(row.imagen_url),
+        imageUrl: row.imagen_id === null ? null : `/api/content/assets/${encodeURIComponent(String(row.imagen_id))}`,
         shopifyStatus: 'No conectado',
         variants: []
       };
@@ -191,11 +193,13 @@ export async function getProductDetail(id: string, database?: QueryClient): Prom
     { sql: `SELECT id, titulo_canonico, marca_original, nombre_modelo, referencia_original,
                    colorway_original, tipo_producto, estado
             FROM productos WHERE id = ? LIMIT 1`, args: [id] },
-    { sql: `SELECT r.uri_almacenamiento
+    { sql: `SELECT r.id
             FROM biblioteca_contenido b
             JOIN recursos_contenido r ON r.biblioteca_contenido_id = b.id
             WHERE b.producto_id = ? AND r.tipo = 'IMAGEN'
               AND r.estado NOT IN ('ARCHIVADO', 'RECHAZADO')
+              AND r.archivado_en_ms IS NULL
+              AND json_extract(r.metadata_generacion_json, '$.role') IS NULL
             ORDER BY CASE r.estado WHEN 'APROBADO' THEN 0 ELSE 1 END, r.posicion`, args: [id] },
     { sql: `SELECT
               v.id, v.talla_original, v.etiqueta_talla, v.sistema_talla,
@@ -256,7 +260,7 @@ export async function getProductDetail(id: string, database?: QueryClient): Prom
     state,
     stateLabel: PRODUCT_STATE_LABELS[state],
     stock: variantList.reduce((sum, variant) => sum + variant.quantity, 0),
-    images: imageResult.rows.map((row) => String(row.uri_almacenamiento)),
+    images: imageResult.rows.map((row) => `/api/content/assets/${encodeURIComponent(String(row.id))}`),
     variants: variantList
   };
 }

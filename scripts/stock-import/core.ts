@@ -124,6 +124,23 @@ export function normalizeKey(value: unknown): string {
     .toUpperCase();
 }
 
+export function normalizeProductReference(value: unknown): string {
+  const normalized = normalizeText(value).toUpperCase().replace(/\s*-\s*/g, '-');
+  const parts = normalized.split(/\s+/).filter(Boolean);
+  return parts.length > 1 && parts.every((part) => /^[A-Z0-9]+$/.test(part))
+    ? parts.join('-')
+    : normalized;
+}
+
+export function normalizeReferenceForComparison(value: unknown): string | null {
+  const normalized = normalizeText(value)
+    .toUpperCase()
+    .replace(/[\u200B-\u200D\uFEFF]/g, '')
+    .replace(/[\s/\\\u2044\u2215\u2010-\u2015\u2212-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return normalized || null;
+}
+
 export function normalizeHeader(value: unknown): string {
   return normalizeKey(value).replace(/[^A-Z0-9]/g, '');
 }
@@ -183,6 +200,50 @@ export function barcodeToString(value: unknown, formatted?: string): string | nu
     throw new Error('UPC en notación científica fuera del rango seguro; conviértelo a texto en Excel.');
   }
   return text;
+}
+
+export interface GtinNormalizationResult {
+  original: string | null;
+  canonical: string | null;
+  formatValid: boolean;
+  checkDigitValid: boolean | null;
+}
+
+const GTIN_LENGTHS = new Set([8, 12, 13, 14]);
+
+function gtinDigits(value: unknown, formatted?: string): { original: string | null; digits: string | null } {
+  const original = barcodeToString(value, formatted);
+  if (!original) return { original: null, digits: null };
+  const withoutLabel = original.replace(/^\s*(?:GTIN(?:-1[2348])?|EAN(?:-8|-13)?|UPC(?:-A)?)\s*[:#]?\s*/i, '');
+  const digits = withoutLabel.replace(/[\s-]/g, '');
+  return { original, digits: /^\d+$/.test(digits) ? digits : null };
+}
+
+export function hasValidGtinCheckDigit(gtin: string): boolean {
+  if (!GTIN_LENGTHS.has(gtin.length) || !/^\d+$/.test(gtin)) return false;
+  const expected = gtin.charCodeAt(gtin.length - 1) - 48;
+  let sum = 0;
+  for (let index = gtin.length - 2, position = 0; index >= 0; index -= 1, position += 1) {
+    sum += (gtin.charCodeAt(index) - 48) * (position % 2 === 0 ? 3 : 1);
+  }
+  return (10 - (sum % 10)) % 10 === expected;
+}
+
+export function inspectGtin(value: unknown, formatted?: string): GtinNormalizationResult {
+  const { original, digits } = gtinDigits(value, formatted);
+  if (!digits || !GTIN_LENGTHS.has(digits.length)) {
+    return { original, canonical: null, formatValid: false, checkDigitValid: null };
+  }
+  return {
+    original,
+    canonical: digits.padStart(14, '0'),
+    formatValid: true,
+    checkDigitValid: hasValidGtinCheckDigit(digits)
+  };
+}
+
+export function normalizeGtin(value: unknown, formatted?: string): string | null {
+  return inspectGtin(value, formatted).canonical;
 }
 
 function parsePositiveInteger(value: unknown): number {
@@ -273,7 +334,7 @@ function productKey(data: ExcelRowData): string {
   return JSON.stringify([
     normalizeKey(data.marca),
     normalizeKey(data.modelo),
-    normalizeKey(data.referencia),
+    normalizeKey(normalizeProductReference(data.referencia)),
     normalizeKey(data.colorway)
   ]);
 }
@@ -323,7 +384,7 @@ export function analyzeRows(rows: SourceRow[], physicalRows = rows.length): Impo
   for (const { rowNumber, data } of rows) {
     const marca = normalizeText(data.marca);
     const modelo = normalizeText(data.modelo);
-    const referencia = normalizeText(data.referencia);
+    const referencia = normalizeProductReference(data.referencia);
     const originalSize = normalizeText(data.talla);
     if (!modelo && !referencia && !originalSize) {
       ignoredTemplateRows += 1;
@@ -435,7 +496,7 @@ export function analyzeRows(rows: SourceRow[], physicalRows = rows.length): Impo
       const existing = variants.get(vKey);
       if (existing) {
         if (
-          existing.barcode !== variantBarcode ||
+          normalizeGtin(existing.barcode) !== normalizeGtin(variantBarcode) ||
           existing.priceCents !== (offerCents ?? safePvpCents) ||
           existing.compareAtPriceCents !== (offerCents === null ? null : safePvpCents) ||
           existing.locationCode !== normalizeKey(locationName).replace(/[^A-Z0-9]+/g, '_')

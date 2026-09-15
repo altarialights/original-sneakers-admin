@@ -1,90 +1,659 @@
 ---
 import AdminLayout from '../../layouts/AdminLayout.astro';
-import Icon from '../../components/ui/Icon.astro';
 import PageHeader from '../../components/ui/PageHeader.astro';
 import PhotoUploadCard from '../../components/ui/PhotoUploadCard.astro';
-import ProductThumbnail from '../../components/ui/ProductThumbnail.astro';
+
+export const prerender = false;
 ---
 
-<AdminLayout title="Añadir con fotos" description="Fotografía la caja, el ticket y la zapatilla.">
-  <div data-step="photos">
-    <PageHeader title="Añadir con fotos" description="Haz tres fotos claras. Después podrás revisar todo antes de aprobar." backHref="/anadir" backLabel="Formas de añadir" />
-    <div class="mb-5 flex items-center gap-2 text-xs font-semibold text-slate-500"><span class="grid size-6 place-items-center rounded-full bg-slate-950 text-white">1</span><span>Fotos</span><span class="h-px w-6 bg-slate-200"></span><span class="grid size-6 place-items-center rounded-full bg-slate-200">2</span><span>Revisar</span><span class="h-px w-6 bg-slate-200"></span><span class="grid size-6 place-items-center rounded-full bg-slate-200">3</span><span>Imágenes</span></div>
-    <section class="grid gap-4 lg:grid-cols-3" aria-label="Fotos necesarias">
-      <PhotoUploadCard id="box" title="Caja" hint="Que se vea bien la etiqueta con referencia y talla." tone="blue" />
-      <PhotoUploadCard id="receipt" title="Ticket" hint="Incluye el precio de compra completo." tone="amber" />
-      <PhotoUploadCard id="shoe" title="Zapatilla" hint="Haz una foto lateral con buena luz." />
-    </section>
-    <div class="mt-5 rounded-2xl border border-slate-200 bg-white p-4 sm:flex sm:items-center sm:justify-between sm:p-5"><div><p class="text-sm font-semibold">¿Quieres probar el flujo?</p><p class="mt-1 text-xs text-slate-500">Carga tres imágenes de ejemplo. Solo se usan en tu navegador.</p></div><button type="button" data-sample-photos class="mt-3 min-h-11 rounded-xl border border-slate-200 px-4 text-sm font-semibold sm:mt-0">Usar fotos de ejemplo</button></div>
-    <div class="mt-5 rounded-2xl border border-slate-200 bg-white p-3"><button type="button" data-analyze disabled class="min-h-13 w-full rounded-xl bg-slate-950 px-5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-35 sm:ml-auto sm:block sm:w-auto">Analizar producto</button><p data-photo-count class="mt-2 text-center text-xs text-slate-400 sm:hidden">Faltan 3 fotos</p></div>
-  </div>
-
-  <div data-step="review" class="hidden">
-    <PageHeader title="Producto detectado" description="Comprueba los datos importantes antes de aprobar." backHref="/anadir/fotos" backLabel="Volver a las fotos" />
-    <div class="mx-auto grid max-w-5xl gap-5 lg:grid-cols-[minmax(0,1fr)_18rem]">
-      <section class="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
-        <div class="flex items-center gap-4 border-b border-slate-100 pb-5"><ProductThumbnail tone="blue" /><div><p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Nike</p><h2 class="mt-1 text-lg font-semibold">Air Force 1 Retro PRM</h2></div></div>
-        <div class="mt-6 grid gap-5 sm:grid-cols-2">
-          {[
-            ['Referencia', 'IR0871-400', 'Confirmado en la caja'],
-            ['Colorway', 'Hydrogen Blue / Football Grey', 'Confirmado'],
-            ['Talla', '42.5 EU', 'Confirmado en caja y zapatilla'],
-            ['UPC', '198730356907', 'Confirmado en caja y zapatilla'],
-            ['Cantidad', '1', 'Confirmado'],
-            ['Coste', '', 'Revisar']
-          ].map(([label, value, state]) => <label><span class="text-xs font-medium text-slate-500">{label}</span><input value={value} placeholder={label === 'Coste' ? 'No encontrado' : undefined} class:list={['mt-1.5 min-h-11 w-full rounded-xl border bg-white px-3 text-sm font-semibold outline-none focus:border-blue-500', state === 'Revisar' ? 'border-amber-300' : 'border-slate-200']} /><span class:list={['mt-1.5 flex items-center gap-1 text-xs font-medium', state === 'Revisar' ? 'text-amber-700' : 'text-emerald-700']}><Icon name={state === 'Revisar' ? 'warning' : 'check'} class="size-3.5" />{state}</span></label>)}
-          <label><span class="text-xs font-medium text-slate-500">PVP</span><div class="relative mt-1.5"><input value="149,90" inputmode="decimal" class="min-h-11 w-full rounded-xl border border-slate-200 px-3 pr-9 text-sm font-semibold" /><span class="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">€</span></div><span class="mt-1.5 flex items-center gap-1 text-xs font-medium text-amber-700"><Icon name="warning" class="size-3.5" />Revisar precio</span></label>
-        </div>
-      </section>
-      <aside class="h-fit rounded-2xl border border-slate-200 bg-white p-5">
-        <h2 class="font-semibold">Comprobación</h2>
-        <ul class="mt-4 space-y-3 text-sm"><li class="flex gap-2 text-emerald-700"><Icon name="check" class="mt-0.5 size-4 shrink-0" /><span>Caja y zapatilla coinciden</span></li><li class="flex gap-2 text-emerald-700"><Icon name="check" class="mt-0.5 size-4 shrink-0" /><span>UPC detectado</span></li><li class="flex gap-2 text-amber-700"><Icon name="warning" class="mt-0.5 size-4 shrink-0" /><span>Coste no encontrado en el ticket</span></li></ul>
-        <div class="mt-6 space-y-2"><button type="button" data-edit-review class="min-h-12 w-full rounded-xl border border-slate-200 text-sm font-semibold">Editar</button><button type="button" data-approve class="min-h-12 w-full rounded-xl bg-slate-950 text-sm font-semibold text-white">Aprobar producto</button><button type="button" data-approve class="min-h-11 w-full text-xs font-semibold text-slate-500">Aprobar con datos pendientes</button></div>
-      </aside>
+<AdminLayout title="Añadir con fotos" description="Fotografía los datos del producto para preparar el alta.">
+  <div data-step="kind">
+    <PageHeader title="¿Qué quieres subir?" description="Elige el tipo de producto para mostrarte las fotos adecuadas." backHref="/anadir" backLabel="Formas de añadir" />
+    <div class="mx-auto grid max-w-3xl gap-4 sm:grid-cols-2">
+      <button type="button" data-select-kind="CALZADO" class="rounded-2xl border border-slate-200 bg-white p-6 text-left transition hover:border-blue-300 hover:shadow-sm"><span class="grid size-11 place-items-center rounded-xl bg-blue-50 text-xl">👟</span><strong class="mt-4 block text-lg">Calzado</strong><span class="mt-1 block text-sm leading-6 text-slate-500">Caja, ticket y etiqueta interior de la zapatilla.</span></button>
+      <button type="button" data-select-kind="ROPA" class="rounded-2xl border border-slate-200 bg-white p-6 text-left transition hover:border-violet-300 hover:shadow-sm"><span class="grid size-11 place-items-center rounded-xl bg-violet-50 text-xl">👕</span><strong class="mt-4 block text-lg">Ropa</strong><span class="mt-1 block text-sm leading-6 text-slate-500">Etiqueta, ticket y fotografía completa de la prenda.</span></button>
     </div>
   </div>
 
-  <div data-step="images" class="hidden">
-    <PageHeader title="Producto aprobado" description="Solo falta decidir qué imágenes usarás para publicar." />
-    <section class="mx-auto max-w-2xl rounded-3xl border border-slate-200 bg-white p-6 text-center sm:p-10">
-      <span class="mx-auto grid size-12 place-items-center rounded-full bg-emerald-50 text-emerald-700"><Icon name="check" class="size-6" /></span>
-      <p class="mt-5 text-sm font-medium text-slate-500">Nike Air Force 1 Retro PRM</p>
-      <h2 class="mt-1 text-2xl font-semibold tracking-tight">¿Tienes imágenes listas para publicar?</h2>
-      <p class="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-500">Puedes usar las fotos que acabas de subir o crear imágenes preparadas para cada canal.</p>
-      <div class="mt-7 grid gap-3 sm:grid-cols-2"><a href="/stock/nike-air-force-1-retro-prm" class="grid min-h-13 place-items-center rounded-xl border border-slate-200 px-4 text-sm font-semibold">Sí, usar estas fotos</a><a href="/contenido?producto=nike-air-force-1-retro-prm&panel=imagenes" class="grid min-h-13 place-items-center rounded-xl bg-slate-950 px-4 text-sm font-semibold text-white">No, crear imágenes</a></div>
+  <div data-step="photos" class="hidden">
+    <PageHeader title="Añadir con fotos" description="Haz tres fotos claras. Después podrás revisar el producto y decidir si quieres preparar imágenes." backHref="/anadir" backLabel="Formas de añadir" />
+    <div class="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-slate-100 px-4 py-3 text-sm"><span>Tipo seleccionado: <strong data-selected-kind-label></strong></span><button type="button" data-change-kind class="font-semibold text-blue-700">Cambiar tipo</button></div>
+    <div class="mb-5 flex items-center gap-2 text-xs font-semibold text-slate-500">
+      <span class="grid size-6 place-items-center rounded-full bg-slate-950 text-white">1</span><span>Fotos</span>
+      <span class="h-px w-6 bg-slate-200"></span><span class="grid size-6 place-items-center rounded-full bg-slate-200">2</span><span>Revisar</span>
+    </div>
+    <section aria-labelledby="data-photos-title">
+      <h2 id="data-photos-title" class="text-sm font-bold uppercase tracking-wider text-slate-500">Datos del producto</h2>
+      <p class="mt-1 text-sm text-slate-500">Estas fotos nos permiten identificar el producto y su compra.</p>
+      <div data-product-flow="CALZADO" class="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <PhotoUploadCard id="caja" title="Caja" hint="Que se vea completa la etiqueta con referencia, talla y UPC." exampleImage="/onboarding/product-photo-guide/caja.png" exampleAlt="Ejemplo de foto de la etiqueta de una caja de zapatillas" tone="blue" />
+        <PhotoUploadCard id="ticket" title="Ticket" hint="Fotografía el ticket completo y con el texto legible." exampleImage="/onboarding/product-photo-guide/ticket.png" exampleAlt="Ejemplo de ticket completo" tone="amber" />
+        <PhotoUploadCard id="etiqueta" title="Etiqueta de la zapatilla" hint="Acércate para que se lean referencia, talla y códigos." exampleImage="/onboarding/product-photo-guide/etiqueta-zapatilla.png" exampleAlt="Ejemplo de etiqueta interior de una zapatilla" />
+      </div>
+      <div data-product-flow="ROPA" class="mt-4 hidden grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <PhotoUploadCard id="etiquetaRopa" title="Etiqueta de la prenda" hint="Fotografía el hangtag o etiqueta interior para leer referencia, talla, marca y código." tone="blue" />
+        <PhotoUploadCard id="ticket" title="Ticket" hint="Fotografía el ticket completo y con el texto legible." exampleImage="/onboarding/product-photo-guide/ticket.png" exampleAlt="Ejemplo de ticket completo" tone="amber" />
+        <PhotoUploadCard id="prendaCompleta" title="Foto completa de la prenda" hint="Muestra la prenda entera para identificar tipo, color y estilo." />
+      </div>
+      <p data-clothing-guides-note class="mt-3 hidden text-xs leading-5 text-slate-500">Guías pendientes: etiqueta-prenda, prenda-completa, prenda-frontal y prenda-trasera. La estructura queda preparada en public/onboarding/product-photo-guide/.</p>
     </section>
+    <p data-page-error class="mt-5 hidden rounded-2xl bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-800" role="alert"></p>
+    <section data-analysis-loading class="mt-5 hidden rounded-2xl border border-blue-200 bg-blue-50 p-5 text-center" aria-live="polite">
+      <span class="mx-auto block size-7 animate-spin rounded-full border-2 border-blue-200 border-t-blue-700"></span>
+      <p class="mt-3 text-sm font-semibold text-blue-950">Analizando producto…</p>
+      <p data-analysis-stage class="mt-1 text-xs text-blue-700">Subiendo imágenes</p>
+    </section>
+    <div class="mt-5 rounded-2xl border border-slate-200 bg-white p-3 sm:flex sm:items-center sm:justify-between">
+      <button type="button" data-cancel class="min-h-12 rounded-xl px-4 text-sm font-semibold text-slate-600">Cancelar</button>
+      <div>
+        <button type="button" data-analyze disabled class="min-h-13 w-full rounded-xl bg-slate-950 px-5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-35 sm:w-auto">Analizar producto</button>
+        <p data-photo-count class="mt-2 text-center text-xs text-slate-400">Faltan 3 fotos</p>
+      </div>
+    </div>
   </div>
 
+  <div data-step="review" class="hidden">
+    <PageHeader title="Revisar producto" description="Corrige cualquier dato antes de continuar. Nada se guardará todavía." backHref="/anadir/fotos" backLabel="Volver a las fotos" />
+    <div class="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-slate-100 px-4 py-3 text-sm"><span>Tipo seleccionado: <strong data-selected-kind-label></strong></span><button type="button" data-change-kind class="font-semibold text-blue-700">Cambiar tipo</button></div>
+    <section data-unusable-images class="mb-5 hidden space-y-3" aria-live="polite"></section>
+    <form class="mx-auto grid max-w-6xl gap-5 lg:grid-cols-[minmax(0,1fr)_19rem]" data-review-form>
+      <div class="space-y-5">
+        <section class="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+          <h2 class="text-lg font-semibold">Producto</h2><p class="mt-1 text-sm text-slate-500">Datos comunes a todas las tallas.</p>
+          <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <label class="field"><span>Marca</span><input data-field="marca" /><small data-field-state="marca"></small></label>
+            <label class="field"><span>Modelo</span><input data-field="modelo" /><small data-field-state="modelo"></small></label>
+            <label class="field"><span>Referencia</span><input data-field="referencia" /><small data-field-state="referencia"></small></label>
+            <label class="field"><span data-color-label>Colorway</span><input data-field="colorway" /><small data-field-state="colorway"></small></label>
+            <label data-subtype-field class="field hidden"><span>Tipo de prenda</span><input data-field="subtipo" /><small data-field-state="subtipo"></small></label>
+            <label class="field"><span>Tipo</span><select data-field="tipoProducto"><option value="">Sin identificar</option><option value="CALZADO">Calzado</option><option value="ROPA">Ropa</option><option value="ACCESORIO">Accesorio</option><option value="OTRO">Otro</option></select><small data-field-state="tipoProducto"></small></label>
+            <label class="field"><span>Género</span><select data-field="genero"><option value="">Sin identificar</option><option value="DESCONOCIDO">Sin especificar</option><option value="UNISEX">Unisex</option><option value="HOMBRE">Hombre</option><option value="MUJER">Mujer</option><option value="NINO">Niño</option><option value="NINA">Niña</option></select><small data-field-state="genero"></small></label>
+          </div>
+        </section>
+        <section class="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+          <h2 class="text-lg font-semibold">Variante</h2><p data-variant-description class="mt-1 text-sm text-slate-500">La talla detectada en caja y etiqueta.</p>
+          <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <label class="field"><span>Talla</span><input data-field="talla" /><small data-field-state="talla"></small></label>
+            <label class="field"><span>Sistema</span><select data-field="sistemaTalla"><option value="">Sin identificar</option><option>EU</option><option>US</option><option>UK</option><option>CM</option><option>BR</option><option>ALFABETICO</option><option>EDAD</option><option>ALTURA</option><option>DESCONOCIDO</option></select><small data-field-state="sistemaTalla"></small></label>
+            <label class="field"><span>UPC / EAN / GTIN</span><input data-field="upc" inputmode="numeric" autocomplete="off" /><small data-field-state="upc"></small></label>
+            <label class="field"><span>Cantidad</span><input data-field="cantidad" type="number" min="1" step="1" /><small class="state-confirmed">✓ Confirmado</small></label>
+          </div>
+          <p data-foot-length class="mt-4 hidden w-fit rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-500">
+            Longitud del pie: <strong data-foot-length-value class="font-semibold text-slate-700"></strong>
+          </p>
+        </section>
+        <section class="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+          <h2 class="text-lg font-semibold">Compra</h2><p class="mt-1 text-sm text-slate-500">El coste solo se confirma mediante coincidencia exacta con el código del ticket.</p>
+          <div class="mt-6 grid gap-5 sm:grid-cols-3">
+            <label class="field"><span>Coste</span><div class="relative"><input data-field="coste" inputmode="decimal" class="pr-9" /><span class="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">€</span></div><small data-field-state="coste"></small></label>
+            <label class="field"><span>Proveedor</span><input data-field="proveedor" /><small data-field-state="proveedor"></small></label>
+            <label class="field"><span>Fecha</span><input data-field="fechaCompra" type="date" /><small data-field-state="fechaCompra"></small></label>
+          </div>
+        </section>
+        <section class="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6" aria-labelledby="content-status-title">
+          <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Imágenes</p>
+          <h2 id="content-status-title" data-content-title class="mt-2 text-lg font-semibold">Comprobando contenido…</h2>
+          <p data-content-description class="mt-1 text-sm leading-6 text-slate-500">Buscando imágenes asociadas a este producto.</p>
+
+          <div data-content-existing-actions class="mt-5 hidden flex-wrap gap-2">
+            <a data-view-images href="/contenido" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-200 px-4 text-sm font-semibold">Ver imágenes</a>
+            <button type="button" data-use-existing class="min-h-11 rounded-xl bg-slate-950 px-4 text-sm font-semibold text-white">Usar existentes</button>
+            <button type="button" data-generate-new class="min-h-11 rounded-xl border border-slate-200 px-4 text-sm font-semibold">Generar nuevas</button>
+          </div>
+          <div data-content-empty-actions class="mt-5 hidden flex-wrap gap-2">
+            <button type="button" data-create-images class="min-h-11 rounded-xl bg-slate-950 px-4 text-sm font-semibold text-white">Crear imágenes</button>
+            <button type="button" data-skip-images class="min-h-11 rounded-xl border border-slate-200 px-4 text-sm font-semibold">Ahora no</button>
+          </div>
+          <p data-content-choice class="mt-4 hidden rounded-xl bg-emerald-50 px-3 py-2.5 text-sm font-medium text-emerald-800" aria-live="polite"></p>
+
+          <div data-generation-flow class="mt-6 hidden border-t border-slate-200 pt-6">
+            <h3 class="font-semibold">Crear imágenes del producto</h3>
+            <p data-generation-intro class="mt-1 text-sm leading-6 text-slate-500">Necesitamos dos vistas claras como referencia para la futura generación.</p>
+            <div data-stored-references class="mt-4 hidden rounded-xl bg-emerald-50 p-3 text-sm font-medium text-emerald-800">Ya tenemos las dos referencias maestras. No necesitas volver a subirlas.</div>
+            <div data-reference-upload class="mt-4 hidden grid gap-4 md:grid-cols-2">
+              <div data-reference-kind="CALZADO"><PhotoUploadCard id="referenciaLateral" title="Perfil lateral" hint="Fotografía una zapatilla completa totalmente de lado." secondaryHint="Buena luz · sin taparla · evita hacerla demasiado cerca." exampleImage="/onboarding/product-photo-guide/perfil-lateral.png" exampleAlt="Ejemplo de zapatilla fotografiada de perfil" tone="blue" /></div>
+              <div data-reference-kind="ROPA" class="hidden"><PhotoUploadCard id="referenciaFrontal" title="Frontal completo" hint="Fotografía la prenda completa de frente, extendida y sin pliegues." tone="blue" /></div>
+              <PhotoUploadCard id="referenciaTrasera" title="Vista trasera" hint="Fotografía la zapatilla completamente por detrás." secondaryHint="Que se vea bien el talón, la forma trasera y la suela." exampleImage="/onboarding/product-photo-guide/vista-trasera.png" exampleAlt="Ejemplo de zapatilla fotografiada desde atrás" tone="blue" />
+            </div>
+            <p data-reference-progress class="mt-4 hidden text-sm font-semibold text-slate-500"></p>
+            <button type="button" data-generation-next disabled class="mt-4 hidden min-h-11 rounded-xl bg-slate-950 px-4 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-35">Referencias listas para la próxima fase</button>
+            <p class="mt-2 text-xs leading-5 text-slate-400">En esta fase no se generan imágenes ni se guardan recursos permanentes.</p>
+          </div>
+        </section>
+      </div>
+      <aside class="h-fit rounded-2xl border border-slate-200 bg-white p-5 lg:sticky lg:top-8">
+        <h2 class="font-semibold">Comprobación</h2>
+        <div data-duplicate-status class="mt-4 rounded-xl bg-slate-50 p-3 text-sm text-slate-600">Comprobando catálogo…</div>
+        <ul data-review-summary class="mt-4 space-y-3 text-sm"></ul>
+        <p data-approval-error class="mt-4 hidden rounded-xl bg-rose-50 px-3 py-2.5 text-sm font-semibold leading-5 text-rose-800" role="alert"></p>
+        <button type="button" data-back-to-photos class="mt-6 min-h-11 w-full rounded-xl border border-slate-200 text-sm font-semibold">Cambiar fotos</button>
+        <button type="button" data-approve disabled class="mt-2 min-h-12 w-full rounded-xl bg-slate-950 px-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40">Aprobar producto</button>
+        <p class="mt-2 text-center text-xs leading-5 text-slate-500">La confirmación se conectará en el siguiente paso.</p>
+        <button type="button" data-cancel class="mt-3 min-h-11 w-full text-xs font-semibold text-rose-700">Cancelar y eliminar fotos</button>
+      </aside>
+    </form>
+  </div>
+
+  <div data-step="success" class="hidden">
+    <div class="mx-auto max-w-2xl rounded-2xl border border-emerald-200 bg-white p-7 text-center shadow-sm sm:p-10">
+      <span class="mx-auto grid size-14 place-items-center rounded-full bg-emerald-100 text-2xl text-emerald-700">✓</span>
+      <h1 class="mt-5 text-2xl font-bold">Producto añadido al stock</h1>
+      <p data-success-product class="mt-3 text-base font-semibold text-slate-800"></p>
+      <p data-success-detail class="mt-1 text-sm text-slate-500"></p>
+      <div class="mx-auto mt-7 max-w-lg border-t border-slate-100 pt-7">
+        <h2 class="text-lg font-semibold">¿Quieres preparar ahora la publicación?</h2>
+        <p class="mt-2 text-sm leading-6 text-slate-500">Podrás preparar imágenes, textos y toda la información necesaria para publicar el producto.</p>
+      </div>
+      <div class="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
+        <a data-success-publish-link href="/contenido" class="inline-flex min-h-12 items-center justify-center rounded-xl bg-slate-950 px-5 text-sm font-semibold text-white">Preparar publicación</a>
+        <a href="/stock" class="inline-flex min-h-12 items-center justify-center rounded-xl border border-slate-200 px-5 text-sm font-semibold">Volver al stock</a>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .field > span { margin-bottom: .375rem; display: block; font-size: .75rem; font-weight: 600; color: rgb(71 85 105); }
+    .field input, .field select { min-height: 2.75rem; width: 100%; border-radius: .75rem; border: 1px solid rgb(226 232 240); background: white; padding: 0 .75rem; font-size: .875rem; font-weight: 600; outline: none; }
+    .field input:focus, .field select:focus { border-color: rgb(59 130 246); }
+    .field small { margin-top: .375rem; display: block; font-size: .75rem; font-weight: 600; line-height: 1.25rem; }
+    .state-confirmed { color: rgb(4 120 87); }
+    .state-review { color: rgb(180 83 9); }
+    .state-missing { color: rgb(100 116 139); }
+  </style>
+
   <script>
-    const photoCards = Array.from(document.querySelectorAll<HTMLElement>('[data-photo-card]'));
-    const analyze = document.querySelector<HTMLButtonElement>('[data-analyze]');
-    const countLabel = document.querySelector<HTMLElement>('[data-photo-count]');
-    const selected = new Set<HTMLElement>();
+    import { uploadPresigned } from '@vercel/blob/client';
+    import { PRODUCT_IMAGE_PATH_SEGMENTS } from '../../lib/product-detection/config.ts';
+    import { generationReferenceState, type ContentChoice } from '../../lib/product-detection/generation-flow.ts';
+
+    type ProductKind = 'CALZADO' | 'ROPA';
+    type SourceDataKind = 'caja' | 'ticket' | 'etiqueta' | 'etiquetaRopa' | 'prendaCompleta';
+    type GenerationReferenceKind = 'referenciaLateral' | 'referenciaFrontal' | 'referenciaTrasera';
+    type PhotoKind = SourceDataKind | GenerationReferenceKind;
+    type ReviewState = 'CONFIRMADO' | 'REVISAR' | 'NO_ENCONTRADO';
+    interface PhotoState { pathname: string; previewUrl: string; uploaded: boolean; generation: number; }
+    interface FieldStatus { estado: ReviewState; evidencias: SourceDataKind[]; motivo: string | null; }
+    interface DetectionResponse {
+      ok: boolean;
+      message?: string;
+      detection: {
+        imagenes: Record<SourceDataKind, { usable: boolean; motivo: string | null }>;
+        productKind: ProductKind;
+        producto: { marca: string | null; modelo: string | null; referencia: string | null; colorway: string | null; subtipo: string | null; tipoProducto: string | null; genero: string | null };
+        variante: { tallaNormalizada: string | null; sistemaTalla: string | null; equivalenciasTalla: Record<string, string>; upc: string | null; gtinNormalizado: string | null; gtinCheckDigitValido: boolean | null; cantidad: number };
+        compra: { costeCentimos: number | null; proveedor: string | null; fechaCompra: string | null };
+        estados: Record<string, FieldStatus>;
+      };
+      duplicates: { checked: boolean; productExists: boolean; productId: string | null; variantExists: boolean; variantId: string | null; variantSize?: string | null; variantSizeSystem?: string | null; currentStock?: number | null; resultingStock?: number | null; conflict?: string | null };
+      contentStatus: { checked: boolean; hasGenerationReferences: boolean; hasGeneratedImages: boolean; generatedImageCount: number };
+    }
+
+    const sourceKindsByProduct: Record<ProductKind, SourceDataKind[]> = { CALZADO: ['caja', 'ticket', 'etiqueta'], ROPA: ['etiquetaRopa', 'ticket', 'prendaCompleta'] };
+    const referenceKindsByProduct: Record<ProductKind, GenerationReferenceKind[]> = { CALZADO: ['referenciaLateral', 'referenciaTrasera'], ROPA: ['referenciaFrontal', 'referenciaTrasera'] };
+    let productKind: ProductKind | null = null;
+    let sourceKinds: SourceDataKind[] = [];
+    let referenceKinds: GenerationReferenceKind[] = [];
+    const allowedTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
+    const extensions: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
+    const maximumBytes = 10 * 1024 * 1024;
+    const photos = new Map<PhotoKind, PhotoState>();
+    let sessionId = '';
+    let sessionRequest: Promise<string> | null = null;
+    let analyzing = false;
+    let generation = 0;
+    let currentContentStatus: DetectionResponse['contentStatus'] | null = null;
+    let currentDetection: DetectionResponse['detection'] | null = null;
+    let contentChoice: ContentChoice = 'UNDECIDED';
+    let approving = false;
+
+    const kindStep = document.querySelector<HTMLElement>('[data-step="kind"]')!;
+    const photoStep = document.querySelector<HTMLElement>('[data-step="photos"]')!;
+    const reviewStep = document.querySelector<HTMLElement>('[data-step="review"]')!;
+    const successStep = document.querySelector<HTMLElement>('[data-step="success"]')!;
+    const analyzeButton = document.querySelector<HTMLButtonElement>('[data-analyze]')!;
+    const countLabel = document.querySelector<HTMLElement>('[data-photo-count]')!;
+    const pageError = document.querySelector<HTMLElement>('[data-page-error]')!;
+    const loadingPanel = document.querySelector<HTMLElement>('[data-analysis-loading]')!;
+    const stageLabel = document.querySelector<HTMLElement>('[data-analysis-stage]')!;
+    const reviewForm = document.querySelector<HTMLFormElement>('[data-review-form]')!;
+    const approveButton = document.querySelector<HTMLButtonElement>('[data-approve]')!;
+    const approvalError = document.querySelector<HTMLElement>('[data-approval-error]')!;
+    const cardFor = (kind: PhotoKind) => {
+      const activeProductFlow = productKind
+        ? document.querySelector<HTMLElement>(`[data-product-flow="${productKind}"]`)
+        : null;
+      return activeProductFlow?.querySelector<HTMLElement>(`[data-photo-kind="${kind}"]`)
+        ?? document.querySelector<HTMLElement>(`[data-photo-kind="${kind}"]`)!;
+    };
+    const showPageError = (message: string) => { pageError.textContent = message; pageError.classList.remove('hidden'); };
+    const clearPageError = () => pageError.classList.add('hidden');
+    const fieldValue = (name: string) => document.querySelector<HTMLInputElement | HTMLSelectElement>(`[data-field="${name}"]`)?.value.trim() ?? '';
+    const moneyInputToCents = (value: string): number | null => {
+      const normalized = value.trim().replace(/\s|€/g, '');
+      if (!normalized) return null;
+      const match = /^(\d+)(?:[.,](\d{1,2}))?$/.exec(normalized);
+      if (!match) throw new Error('El coste no es válido. Usa un importe como 4,99.');
+      return Number(match[1]) * 100 + Number((match[2] ?? '').padEnd(2, '0'));
+    };
+    const approvalFormIsValid = () => {
+      const quantity = Number(fieldValue('cantidad'));
+      return Boolean(currentDetection
+        && fieldValue('marca')
+        && fieldValue('modelo')
+        && fieldValue('referencia')
+        && fieldValue('talla')
+        && fieldValue('sistemaTalla')
+        && Number.isInteger(quantity)
+        && quantity > 0);
+    };
+    const updateApprovalButton = () => {
+      approveButton.disabled = approving || !approvalFormIsValid();
+      approveButton.textContent = approving ? 'Guardando producto…' : 'Aprobar producto';
+    };
+    const clearApprovalError = () => approvalError.classList.add('hidden');
+    const showApprovalError = (message: string) => {
+      approvalError.textContent = message;
+      approvalError.classList.remove('hidden');
+    };
+
+    const ensureSession = async () => {
+      if (!productKind) throw new Error('Selecciona primero el tipo de producto.');
+      if (sessionId) return sessionId;
+      sessionRequest ??= fetch('/api/product-detection/session', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ productKind }) })
+        .then(async (response) => {
+          const data = await response.json();
+          if (!response.ok || !data.sessionId) throw new Error(data.message ?? 'No hemos podido iniciar la sesión de fotos.');
+          sessionId = data.sessionId;
+          return sessionId;
+        })
+        .finally(() => { sessionRequest = null; });
+      return sessionRequest;
+    };
+
+    const setCardMode = (kind: PhotoKind, mode: 'empty' | 'loading' | 'uploaded' | 'error', message?: string) => {
+      const card = cardFor(kind);
+      const hasPreview = mode !== 'empty';
+      card.querySelector('[data-photo-empty]')?.classList.toggle('hidden', hasPreview);
+      card.querySelector('[data-photo-preview]')?.classList.toggle('hidden', !hasPreview);
+      const loading = card.querySelector<HTMLElement>('[data-photo-loading]')!;
+      loading.classList.toggle('hidden', mode !== 'loading');
+      loading.classList.toggle('grid', mode === 'loading');
+      const uploaded = card.querySelector<HTMLElement>('[data-photo-uploaded]')!;
+      uploaded.classList.toggle('hidden', mode !== 'uploaded');
+      uploaded.classList.toggle('inline-flex', mode === 'uploaded');
+      card.querySelector('[data-photo-actions]')?.classList.toggle('hidden', mode !== 'empty');
+      const changes = card.querySelector<HTMLElement>('[data-photo-change]')!;
+      changes.classList.toggle('hidden', mode === 'empty' || mode === 'loading');
+      changes.classList.toggle('grid', mode === 'uploaded' || mode === 'error');
+      const error = card.querySelector<HTMLElement>('[data-photo-error]')!;
+      error.textContent = message ?? '';
+      error.classList.toggle('hidden', mode !== 'error');
+    };
+
     const updateCount = () => {
-      if (analyze) analyze.disabled = selected.size < 3;
-      if (countLabel) countLabel.textContent = selected.size === 3 ? 'Todo listo' : `Faltan ${3 - selected.size} foto${3 - selected.size === 1 ? '' : 's'}`;
+      const uploaded = sourceKinds.filter((kind) => photos.get(kind)?.uploaded).length;
+      analyzeButton.disabled = analyzing || uploaded < sourceKinds.length;
+      const missing = sourceKinds.length - uploaded;
+      countLabel.textContent = missing === 0 ? 'Todo listo' : `Faltan ${missing} foto${missing === 1 ? '' : 's'}`;
     };
-    const setPreview = (card: HTMLElement, src: string) => {
-      card.querySelector<HTMLImageElement>('[data-photo-preview] img')!.src = src;
-      card.querySelector('[data-photo-empty]')?.classList.add('hidden');
-      card.querySelector('[data-photo-preview]')?.classList.remove('hidden');
-      card.querySelector('[data-photo-actions]')?.classList.add('hidden');
-      card.querySelector('[data-photo-change]')?.classList.remove('hidden');
-      card.querySelector('[data-photo-change]')?.classList.add('grid');
-      selected.add(card); updateCount();
+    const updateReferenceProgress = () => {
+      if (!currentContentStatus || contentChoice !== 'GENERATE_NEW') return;
+      const state = generationReferenceState(
+        currentContentStatus,
+        contentChoice,
+        Object.fromEntries(referenceKinds
+          .filter((kind) => photos.has(kind))
+          .map((kind) => [kind, { pathname: photos.get(kind)!.pathname, uploaded: photos.get(kind)!.uploaded }])),
+        productKind ?? 'CALZADO'
+      );
+      const progress = document.querySelector<HTMLElement>('[data-reference-progress]')!;
+      const next = document.querySelector<HTMLButtonElement>('[data-generation-next]')!;
+      if (state.requiredKinds.length === 0) {
+        progress.textContent = 'Referencias existentes listas.';
+      } else {
+        const uploaded = state.requiredKinds.filter((kind) => state.images[kind]?.uploaded).length;
+        progress.textContent = state.ready ? 'Las dos referencias están listas.' : `Faltan ${state.requiredKinds.length - uploaded} foto${state.requiredKinds.length - uploaded === 1 ? '' : 's'} de referencia.`;
+      }
+      progress.classList.remove('hidden');
+      next.classList.remove('hidden');
+      next.disabled = !state.ready;
     };
-    photoCards.forEach((card, index) => {
-      card.querySelectorAll<HTMLInputElement>('[data-photo-input]').forEach((input) => input.addEventListener('change', () => { const file = input.files?.[0]; if (file) setPreview(card, URL.createObjectURL(file)); }));
-      card.querySelector('[data-photo-remove]')?.addEventListener('click', () => { card.querySelector('[data-photo-empty]')?.classList.remove('hidden'); card.querySelector('[data-photo-preview]')?.classList.add('hidden'); card.querySelector('[data-photo-actions]')?.classList.remove('hidden'); card.querySelector('[data-photo-change]')?.classList.add('hidden'); selected.delete(card); updateCount(); });
-      card.dataset.sampleIndex = String(index);
+    const removePhoto = (kind: PhotoKind) => {
+      const current = photos.get(kind);
+      if (current) URL.revokeObjectURL(current.previewUrl);
+      photos.delete(kind);
+      setCardMode(kind, 'empty');
+      updateCount();
+      updateReferenceProgress();
+    };
+
+    const uploadPhoto = async (kind: PhotoKind, file: File) => {
+      clearPageError();
+      if (!allowedTypes.has(file.type)) {
+        setCardMode(kind, photos.has(kind) ? 'error' : 'empty');
+        const cardError = cardFor(kind).querySelector<HTMLElement>('[data-photo-error]')!;
+        cardError.textContent = 'Esta imagen no es compatible.';
+        cardError.classList.remove('hidden');
+        return;
+      }
+      if (file.size > maximumBytes) {
+        setCardMode(kind, photos.has(kind) ? 'error' : 'empty');
+        const cardError = cardFor(kind).querySelector<HTMLElement>('[data-photo-error]')!;
+        cardError.textContent = 'La imagen supera el tamaño máximo permitido.';
+        cardError.classList.remove('hidden');
+        return;
+      }
+      const current = photos.get(kind);
+      if (current) URL.revokeObjectURL(current.previewUrl);
+      const previewUrl = URL.createObjectURL(file);
+      const ownGeneration = ++generation;
+      cardFor(kind).querySelector<HTMLImageElement>('[data-photo-preview] img')!.src = previewUrl;
+      photos.set(kind, { pathname: '', previewUrl, uploaded: false, generation: ownGeneration });
+      setCardMode(kind, 'loading');
+      updateCount();
+      try {
+        const id = await ensureSession();
+        if (!productKind) throw new Error('Selecciona primero el tipo de producto.');
+        const pathname = `altas-temporales/${id}/${productKind}/${PRODUCT_IMAGE_PATH_SEGMENTS[kind]}.${extensions[file.type]}`;
+        const blob = await uploadPresigned(pathname, file, {
+          access: 'private',
+          handleUploadUrl: '/api/product-detection/upload',
+          contentType: file.type
+        });
+        if (photos.get(kind)?.generation !== ownGeneration) return;
+        photos.set(kind, { pathname: blob.pathname, previewUrl, uploaded: true, generation: ownGeneration });
+        setCardMode(kind, 'uploaded');
+      } catch {
+        if (photos.get(kind)?.generation !== ownGeneration) return;
+        photos.set(kind, { pathname: '', previewUrl, uploaded: false, generation: ownGeneration });
+        const localHelp = location.hostname === 'localhost' || location.hostname === '127.0.0.1'
+          ? ' Si el acceso OIDC ha caducado, ejecuta: pnpm dlx vercel env pull .env.local'
+          : '';
+        setCardMode(kind, 'error', `No hemos podido subir esta imagen.${localHelp}`);
+      } finally { updateCount(); updateReferenceProgress(); }
+    };
+
+    document.querySelectorAll<HTMLElement>('[data-photo-card]').forEach((card) => {
+      const kind = card.dataset.photoKind as PhotoKind;
+      card.querySelectorAll<HTMLInputElement>('[data-photo-input]').forEach((input) => input.addEventListener('change', () => {
+        const file = input.files?.[0]; input.value = ''; if (file) void uploadPhoto(kind, file);
+      }));
+      card.querySelector('[data-photo-remove]')?.addEventListener('click', () => removePhoto(kind));
     });
-    document.querySelector('[data-sample-photos]')?.addEventListener('click', () => photoCards.forEach((card, index) => {
-      const colors = ['%23dbeafe', '%23fef3c7', '%23e2e8f0'];
-      const names = ['CAJA', 'TICKET', 'ZAPATILLA'];
-      setPreview(card, `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='700' height='450'%3E%3Crect width='700' height='450' fill='${colors[index]}'/%3E%3Ctext x='350' y='235' text-anchor='middle' font-family='Arial' font-size='38' font-weight='700' fill='%23475569'%3E${names[index]} · MUESTRA%3C/text%3E%3C/svg%3E`);
+
+    const clearCurrentFlow = async () => {
+      generation += 1;
+      for (const [kind, photo] of photos) { URL.revokeObjectURL(photo.previewUrl); setCardMode(kind, 'empty'); }
+      photos.clear();
+      if (sessionId) {
+        try { await fetch(`/api/product-detection/session/${sessionId}`, { method: 'DELETE' }); } catch { /* limpieza automática como respaldo */ }
+      }
+      sessionId = '';
+      sessionRequest = null;
+      currentContentStatus = null;
+      contentChoice = 'UNDECIDED';
+    };
+
+    const selectProductKind = async (nextKind: ProductKind) => {
+      if (productKind && productKind !== nextKind && photos.size > 0 && !window.confirm('Al cambiar de tipo, las fotos actuales se retirarán de este flujo. ¿Quieres continuar?')) return;
+      if (productKind && productKind !== nextKind) await clearCurrentFlow();
+      productKind = nextKind;
+      sourceKinds = sourceKindsByProduct[nextKind];
+      referenceKinds = referenceKindsByProduct[nextKind];
+      document.querySelectorAll<HTMLElement>('[data-selected-kind-label]').forEach((label) => { label.textContent = nextKind === 'CALZADO' ? 'Calzado' : 'Ropa'; });
+      document.querySelectorAll<HTMLElement>('[data-product-flow]').forEach((flow) => flow.classList.toggle('hidden', flow.dataset.productFlow !== nextKind));
+      document.querySelectorAll<HTMLElement>('[data-reference-kind]').forEach((flow) => flow.classList.toggle('hidden', flow.dataset.referenceKind !== nextKind));
+      document.querySelector('[data-clothing-guides-note]')?.classList.toggle('hidden', nextKind !== 'ROPA');
+      document.querySelector('[data-subtype-field]')?.classList.toggle('hidden', nextKind !== 'ROPA');
+      document.querySelector<HTMLElement>('[data-color-label]')!.textContent = nextKind === 'ROPA' ? 'Color principal' : 'Colorway';
+      document.querySelector<HTMLElement>('[data-variant-description]')!.textContent = nextKind === 'ROPA' ? 'La talla detectada en la etiqueta de la prenda.' : 'La talla detectada en caja y etiqueta.';
+      const rearCard = cardFor('referenciaTrasera');
+      rearCard.querySelector('h3')!.textContent = nextKind === 'ROPA' ? 'Trasera completa' : 'Vista trasera';
+      rearCard.querySelector('h3 + p')!.textContent = nextKind === 'ROPA' ? 'Fotografía la prenda completa por detrás, extendida y sin pliegues.' : 'Fotografía la zapatilla completamente por detrás.';
+      kindStep.classList.add('hidden');
+      reviewStep.classList.add('hidden');
+      photoStep.classList.remove('hidden');
+      updateCount();
+    };
+    document.querySelectorAll<HTMLElement>('[data-select-kind]').forEach((button) => button.addEventListener('click', () => void selectProductKind(button.dataset.selectKind as ProductKind)));
+    document.querySelectorAll<HTMLElement>('[data-change-kind]').forEach((button) => button.addEventListener('click', () => {
+      photoStep.classList.add('hidden'); reviewStep.classList.add('hidden'); kindStep.classList.remove('hidden'); window.scrollTo({ top: 0, behavior: 'smooth' });
     }));
-    analyze?.addEventListener('click', () => { document.querySelector('[data-step="photos"]')?.classList.add('hidden'); document.querySelector('[data-step="review"]')?.classList.remove('hidden'); window.scrollTo({ top: 0, behavior: 'smooth' }); });
-    document.querySelector('[data-edit-review]')?.addEventListener('click', () => document.querySelector<HTMLInputElement>('[data-step="review"] input')?.focus());
-    document.querySelectorAll('[data-approve]').forEach((button) => button.addEventListener('click', () => { document.querySelector('[data-step="review"]')?.classList.add('hidden'); document.querySelector('[data-step="images"]')?.classList.remove('hidden'); window.scrollTo({ top: 0, behavior: 'smooth' }); }));
+
+    const statusLabel = (status: FieldStatus) => {
+      const evidenceLabels: Record<SourceDataKind, string> = {
+        caja: 'caja', ticket: 'ticket', etiqueta: 'etiqueta', etiquetaRopa: 'etiqueta de prenda', prendaCompleta: 'prenda completa'
+      };
+      const sources = status.evidencias.map((source) => evidenceLabels[source]).join(' y ');
+      if (status.estado === 'CONFIRMADO') return `✓ Confirmado${sources ? ` en ${sources}` : ''}`;
+      if (status.estado === 'REVISAR') return `⚠ Revisar${status.motivo ? ` · ${status.motivo}` : ''}`;
+      return `— No encontrado${status.motivo && status.motivo !== 'No se ha encontrado.' ? ` · ${status.motivo}` : ''}`;
+    };
+    const setField = (name: string, value: string | number | null) => {
+      const field = document.querySelector<HTMLInputElement | HTMLSelectElement>(`[data-field="${name}"]`);
+      if (field) field.value = value === null ? '' : String(value);
+    };
+    const setFieldStatus = (name: string, status: FieldStatus) => {
+      const element = document.querySelector<HTMLElement>(`[data-field-state="${name}"]`);
+      if (!element) return;
+      element.textContent = statusLabel(status);
+      element.className = status.estado === 'CONFIRMADO' ? 'state-confirmed' : status.estado === 'REVISAR' ? 'state-review' : 'state-missing';
+    };
+
+    const showGenerationFlow = () => {
+      if (!currentContentStatus) return;
+      contentChoice = 'GENERATE_NEW';
+      const flow = document.querySelector<HTMLElement>('[data-generation-flow]')!;
+      const stored = document.querySelector<HTMLElement>('[data-stored-references]')!;
+      const upload = document.querySelector<HTMLElement>('[data-reference-upload]')!;
+      flow.classList.remove('hidden');
+      stored.classList.toggle('hidden', !currentContentStatus.hasGenerationReferences);
+      upload.classList.toggle('hidden', currentContentStatus.hasGenerationReferences);
+      document.querySelectorAll<HTMLElement>('[data-reference-kind]').forEach((item) => item.classList.toggle('hidden', item.dataset.referenceKind !== productKind));
+      updateReferenceProgress();
+      flow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    };
+
+    const chooseWithoutNewImages = (choice: 'USE_EXISTING' | 'SKIP') => {
+      contentChoice = choice;
+      document.querySelector<HTMLElement>('[data-generation-flow]')!.classList.add('hidden');
+      const message = document.querySelector<HTMLElement>('[data-content-choice]')!;
+      message.textContent = choice === 'USE_EXISTING'
+        ? 'Usaremos las imágenes existentes. Puedes continuar con el producto.'
+        : 'Sin generación por ahora. Puedes continuar con el producto sin aportar más fotos.';
+      message.classList.remove('hidden');
+    };
+
+    const renderContentStatus = (status: DetectionResponse['contentStatus'], productId: string | null) => {
+      currentContentStatus = status;
+      contentChoice = 'UNDECIDED';
+      const title = document.querySelector<HTMLElement>('[data-content-title]')!;
+      const description = document.querySelector<HTMLElement>('[data-content-description]')!;
+      const existingActions = document.querySelector<HTMLElement>('[data-content-existing-actions]')!;
+      const emptyActions = document.querySelector<HTMLElement>('[data-content-empty-actions]')!;
+      const choice = document.querySelector<HTMLElement>('[data-content-choice]')!;
+      const flow = document.querySelector<HTMLElement>('[data-generation-flow]')!;
+      choice.classList.add('hidden');
+      flow.classList.add('hidden');
+      if (!status.checked) {
+        title.textContent = 'No hemos podido comprobar las imágenes ahora.';
+        description.textContent = 'Puedes preparar imágenes nuevas o continuar y revisarlo más tarde.';
+      } else if (status.hasGeneratedImages) {
+        title.textContent = `✓ Ya tenemos ${status.generatedImageCount} ${status.generatedImageCount === 1 ? 'imagen' : 'imágenes'} para este producto.`;
+        description.textContent = 'Puedes reutilizarlas o decidir expresamente preparar unas nuevas.';
+      } else {
+        title.textContent = 'Aún no hay imágenes preparadas.';
+        description.textContent = 'Puedes crear imágenes del producto ahora o hacerlo más tarde.';
+      }
+      const showExisting = status.checked && status.hasGeneratedImages;
+      existingActions.classList.toggle('hidden', !showExisting);
+      existingActions.classList.toggle('flex', showExisting);
+      emptyActions.classList.toggle('hidden', showExisting);
+      emptyActions.classList.toggle('flex', !showExisting);
+      const viewImages = document.querySelector<HTMLAnchorElement>('[data-view-images]')!;
+      viewImages.href = productId ? `/contenido?producto=${encodeURIComponent(productId)}` : '/contenido';
+    };
+
+    const renderResult = (result: DetectionResponse) => {
+      const { detection, duplicates, contentStatus } = result;
+      currentDetection = detection;
+      setField('marca', detection.producto.marca); setField('modelo', detection.producto.modelo);
+      setField('referencia', detection.producto.referencia); setField('colorway', detection.producto.colorway);
+      setField('subtipo', detection.producto.subtipo);
+      setField('tipoProducto', detection.producto.tipoProducto); setField('genero', detection.producto.genero);
+      setField('talla', detection.variante.tallaNormalizada); setField('sistemaTalla', detection.variante.sistemaTalla);
+      setField('upc', detection.variante.upc); setField('cantidad', detection.variante.cantidad);
+      const footLength = document.querySelector<HTMLElement>('[data-foot-length]')!;
+      const footLengthCm = detection.productKind === 'CALZADO' ? detection.variante.equivalenciasTalla.CM : null;
+      footLength.classList.toggle('hidden', !footLengthCm);
+      footLength.querySelector<HTMLElement>('[data-foot-length-value]')!.textContent = footLengthCm ? `${footLengthCm.replace('.', ',')} cm` : '';
+      setField('coste', detection.compra.costeCentimos === null ? null : (detection.compra.costeCentimos / 100).toFixed(2).replace('.', ','));
+      setField('proveedor', detection.compra.proveedor); setField('fechaCompra', detection.compra.fechaCompra);
+      Object.entries(detection.estados).forEach(([name, status]) => setFieldStatus(name, status));
+
+      const duplicateBox = document.querySelector<HTMLElement>('[data-duplicate-status]')!;
+      if (!duplicates.checked) {
+        duplicateBox.className = 'mt-4 rounded-xl bg-amber-50 p-3 text-sm font-medium text-amber-800';
+        duplicateBox.textContent = 'No se ha podido comprobar ahora si ya existe. Revísalo antes del siguiente paso.';
+      } else if (duplicates.conflict) {
+        duplicateBox.className = 'mt-4 rounded-xl bg-red-50 p-3 text-sm font-medium text-red-800';
+        duplicateBox.textContent = duplicates.conflict;
+      } else if (duplicates.productExists) {
+        duplicateBox.className = 'mt-4 rounded-xl bg-amber-50 p-3 text-sm font-medium text-amber-900';
+        const quantity = Number(fieldValue('cantidad')) || 1;
+        const resultingStock = (duplicates.currentStock ?? 0) + quantity;
+        duplicateBox.textContent = duplicates.variantExists
+          ? `Esta variante ya existe. Al aprobar se añadirán ${quantity} ${quantity === 1 ? 'unidad' : 'unidades'} al stock. Variante existente: ${duplicates.variantSize} ${duplicates.variantSizeSystem}. Stock actual: ${duplicates.currentStock}. Después de aprobar: ${resultingStock}.`
+          : `Este producto ya existe. Al aprobar se creará la talla y se añadirán ${quantity} ${quantity === 1 ? 'unidad' : 'unidades'}.`;
+      } else {
+        duplicateBox.className = 'mt-4 rounded-xl bg-emerald-50 p-3 text-sm font-medium text-emerald-800';
+        duplicateBox.textContent = 'Producto nuevo';
+      }
+
+      renderContentStatus(contentStatus, duplicates.productId);
+
+      const unusable = document.querySelector<HTMLElement>('[data-unusable-images]')!;
+      unusable.replaceChildren();
+      sourceKinds.forEach((kind) => {
+        const image = detection.imagenes[kind]; if (image.usable) return;
+        const article = document.createElement('article');
+        article.className = 'flex flex-col gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 sm:flex-row sm:items-center sm:justify-between';
+        const defaults: Record<SourceDataKind, string> = {
+          caja: 'No podemos leer bien la etiqueta de la caja.',
+          ticket: 'No podemos leer bien el ticket.',
+          etiqueta: 'No podemos leer bien la etiqueta de la zapatilla.',
+          etiquetaRopa: 'No podemos leer bien la etiqueta de la prenda.',
+          prendaCompleta: 'No podemos identificar bien la prenda completa.'
+        };
+        const text = document.createElement('div');
+        const message = document.createElement('p'); message.className = 'mt-1 text-xs leading-5 text-amber-800'; message.textContent = image.motivo || defaults[kind]; text.append(message);
+        const button = document.createElement('button'); button.type = 'button'; button.className = 'min-h-11 rounded-xl border border-amber-300 bg-white px-4 text-sm font-semibold'; button.textContent = 'Repetir foto'; button.addEventListener('click', () => backToPhotos(kind));
+        article.append(text, button); unusable.append(article);
+      });
+      unusable.classList.toggle('hidden', unusable.childElementCount === 0);
+
+      const summary = document.querySelector<HTMLElement>('[data-review-summary]')!;
+      summary.replaceChildren();
+      for (const [label, key] of [['Referencia', 'referencia'], ['UPC', 'upc'], ['Talla', 'talla'], ['Coste', 'coste']] as const) {
+        const status = detection.estados[key];
+        const item = document.createElement('li');
+        item.className = status.estado === 'CONFIRMADO' ? 'text-emerald-700' : status.estado === 'REVISAR' ? 'text-amber-700' : 'text-slate-500';
+        item.textContent = `${label}: ${statusLabel(status)}`; summary.append(item);
+      }
+      updateApprovalButton();
+    };
+
+    const setAnalyzing = (value: boolean) => {
+      analyzing = value; loadingPanel.classList.toggle('hidden', !value);
+      analyzeButton.textContent = value ? 'Analizando producto…' : 'Analizar producto'; updateCount();
+    };
+    analyzeButton.addEventListener('click', async () => {
+      if (analyzing || sourceKinds.some((kind) => !photos.get(kind)?.uploaded)) return;
+      clearPageError(); setAnalyzing(true);
+      const stages = ['Subiendo imágenes', 'Leyendo etiquetas', 'Revisando ticket', 'Preparando producto'];
+      let stage = 0; stageLabel.textContent = stages[stage];
+      const stageTimer = window.setInterval(() => { stage = Math.min(stage + 1, stages.length - 1); stageLabel.textContent = stages[stage]; }, 1700);
+      try {
+        const response = await fetch('/api/product-detection/analyze', {
+          method: 'POST', headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ sessionId, productKind, imagenes: Object.fromEntries(sourceKinds.map((kind) => [kind, { pathname: photos.get(kind)!.pathname }])) })
+        });
+        const data = await response.json() as DetectionResponse;
+        if (!response.ok || !data.ok) throw new Error(data.message ?? 'No hemos podido analizar correctamente las imágenes. Inténtalo otra vez.');
+        renderResult(data); photoStep.classList.add('hidden'); reviewStep.classList.remove('hidden'); window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (error) {
+        showPageError(error instanceof Error ? error.message : 'No hemos podido analizar correctamente las imágenes. Inténtalo otra vez.');
+      } finally { window.clearInterval(stageTimer); setAnalyzing(false); }
+    });
+
+    function backToPhotos(repeat?: SourceDataKind) {
+      reviewStep.classList.add('hidden'); photoStep.classList.remove('hidden'); window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (repeat) window.setTimeout(() => cardFor(repeat).querySelector<HTMLInputElement>('[data-photo-input]:not([capture])')?.click(), 250);
+    }
+    document.querySelector('[data-back-to-photos]')?.addEventListener('click', () => backToPhotos());
+    reviewForm.addEventListener('input', updateApprovalButton);
+    approveButton.addEventListener('click', async () => {
+      if (!currentDetection || approving || !approvalFormIsValid() || !productKind) return;
+      approving = true;
+      updateApprovalButton();
+      clearApprovalError();
+      try {
+        const quantity = Number(fieldValue('cantidad'));
+        const footLength = productKind === 'CALZADO' ? currentDetection.variante.equivalenciasTalla.CM : null;
+        const payload = {
+          sessionId,
+          tipoProducto: productKind,
+          producto: {
+            marca: fieldValue('marca'),
+            modelo: fieldValue('modelo'),
+            referencia: fieldValue('referencia'),
+            colorway: fieldValue('colorway') || null,
+            genero: fieldValue('genero') || 'DESCONOCIDO',
+            tipoPrenda: productKind === 'ROPA' ? fieldValue('subtipo') || null : null
+          },
+          variante: {
+            talla: fieldValue('talla'),
+            sistemaTalla: fieldValue('sistemaTalla'),
+            gtin: fieldValue('upc') || null,
+            cantidad: quantity,
+            equivalencias: currentDetection.variante.equivalenciasTalla,
+            longitudPieCm: footLength ? Number(footLength) : null
+          },
+          compra: {
+            costeUnitarioCentimos: moneyInputToCents(fieldValue('coste')),
+            proveedor: fieldValue('proveedor') || null,
+            fechaCompra: fieldValue('fechaCompra') || null
+          }
+        };
+        const response = await fetch('/api/product-detection/approve', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await response.json() as { ok: boolean; message?: string; productId?: string; addedQuantity?: number };
+        if (!response.ok || !data.ok || !data.productId) throw new Error(data.message ?? 'No hemos podido guardar el producto.');
+        document.querySelector<HTMLElement>('[data-success-product]')!.textContent = `${fieldValue('marca')} ${fieldValue('modelo')}`;
+        const added = data.addedQuantity ?? quantity;
+        document.querySelector<HTMLElement>('[data-success-detail]')!.textContent = `Talla ${fieldValue('talla')} · +${added} ${added === 1 ? 'unidad' : 'unidades'}`;
+        document.querySelector<HTMLAnchorElement>('[data-success-publish-link]')!.href = `/contenido/${encodeURIComponent(data.productId)}`;
+        reviewStep.classList.add('hidden');
+        successStep.classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (error) {
+        showApprovalError(error instanceof Error ? error.message : 'No hemos podido guardar el producto.');
+      } finally {
+        approving = false;
+        updateApprovalButton();
+      }
+    });
+    document.querySelector('[data-use-existing]')?.addEventListener('click', () => chooseWithoutNewImages('USE_EXISTING'));
+    document.querySelector('[data-skip-images]')?.addEventListener('click', () => chooseWithoutNewImages('SKIP'));
+    document.querySelector('[data-create-images]')?.addEventListener('click', showGenerationFlow);
+    document.querySelector('[data-generate-new]')?.addEventListener('click', showGenerationFlow);
+    const cancelSession = async () => {
+      if (sessionId) { try { await fetch(`/api/product-detection/session/${sessionId}`, { method: 'DELETE', keepalive: true }); } catch { /* limpieza automática futura como respaldo */ } }
+      window.location.assign('/anadir');
+    };
+    document.querySelectorAll('[data-cancel]').forEach((button) => button.addEventListener('click', () => void cancelSession()));
   </script>
 </AdminLayout>

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { barcodeToString, moneyToCents, normalizeText } from './normalization.ts';
+import { barcodeToString, moneyToCents, normalizeProductReference, normalizeText } from './normalization.ts';
 import { InventoryError } from './errors.ts';
 import type { CreateProductInput, ProductFieldsInput, VariantFieldsInput } from './types.ts';
 
@@ -8,6 +8,7 @@ const sizeSystem = z.enum(['EU', 'US', 'UK', 'CM', 'ALFABETICO', 'EDAD', 'ALTURA
 const gender = z.enum(['UNISEX', 'HOMBRE', 'MUJER', 'NINO', 'NINA', 'DESCONOCIDO']);
 const ageGroup = z.enum(['BEBE', 'INFANTIL', 'ADULTO', 'DESCONOCIDO']);
 const requiredText = (label: string) => z.string().transform(normalizeText).pipe(z.string().min(1, `${label} es obligatorio.`));
+const requiredReference = z.string().transform(normalizeProductReference).pipe(z.string().min(1, 'Referencia es obligatoria.'));
 const optionalText = z.union([z.string(), z.null(), z.undefined()]).transform((value) => normalizeText(value) || null);
 const moneyValue = z.union([z.string(), z.number()]);
 const optionalMoneyValue = z.union([z.string(), z.number(), z.null(), z.undefined()]);
@@ -15,7 +16,7 @@ const optionalMoneyValue = z.union([z.string(), z.number(), z.null(), z.undefine
 const productFieldsSchema = z.object({
   brand: requiredText('Marca'),
   model: requiredText('Modelo'),
-  reference: requiredText('Referencia'),
+  reference: requiredReference,
   colorway: optionalText,
   type: productType
 });

@@ -1,12 +1,17 @@
 export {
   barcodeToString,
+  hasValidGtinCheckDigit,
+  inspectGtin,
   moneyToCents,
+  normalizeGtin,
   normalizeKey,
+  normalizeProductReference,
+  normalizeReferenceForComparison,
   normalizeText,
   parseSize
 } from '../../../scripts/stock-import/core.ts';
 
-import { normalizeKey, normalizeText } from '../../../scripts/stock-import/core.ts';
+import { normalizeKey, normalizeProductReference, normalizeText } from '../../../scripts/stock-import/core.ts';
 
 export function canonicalProductKey(input: {
   brand: unknown;
@@ -17,7 +22,7 @@ export function canonicalProductKey(input: {
   return JSON.stringify([
     normalizeKey(input.brand),
     normalizeKey(input.model),
-    normalizeKey(input.reference),
+    normalizeKey(normalizeProductReference(input.reference)),
     normalizeKey(input.colorway)
   ]);
 }
@@ -30,4 +35,3 @@ export function variantSignature(sizeSystem: string, size: unknown): string {
   const normalizedSize = normalizeText(size).replace(/(?<=\d),(?=\d)/g, '.');
   return JSON.stringify({ sistema_talla: sizeSystem, talla: normalizedSize });
 }
-

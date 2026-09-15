@@ -14,6 +14,7 @@ import {
   fingerprintAlreadyImported,
   hashJson,
   normalizeKey,
+  normalizeGtin,
   type ImportAnalysis,
   type ImportError,
   type ProductInput,
@@ -175,11 +176,16 @@ async function auditDatabase(client: Client, analysis: ImportAnalysis, fingerpri
     }
   }
 
-  const barcodes = [...new Set(analysis.variants.map((variant) => variant.barcode).filter((value): value is string => Boolean(value)))];
+  const barcodes = [...new Set(
+    analysis.variants
+      .map((variant) => normalizeGtin(variant.barcode))
+      .filter((value): value is string => Boolean(value))
+  )];
   if (barcodes.length > 0) {
     const barcodeMatches = await client.execute({
       sql: `SELECT COUNT(DISTINCT id) AS total FROM variantes_producto
-            WHERE barcode_normalizado IN (${placeholders(barcodes.length)}) AND archivado_en_ms IS NULL`,
+            WHERE substr('00000000000000' || replace(replace(trim(barcode_normalizado), ' ', ''), '-', ''), -14)
+              IN (${placeholders(barcodes.length)}) AND archivado_en_ms IS NULL`,
       args: barcodes
     });
     const total = Number(barcodeMatches.rows[0]?.total ?? 0);

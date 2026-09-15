@@ -11,8 +11,14 @@ import {
   createProduct,
   updateProduct
 } from '../src/lib/inventory/mutations.ts';
+import {
+  approvePhotoInventory,
+  parsePhotoApprovalPayload,
+  type PhotoApprovalInput
+} from '../src/lib/inventory/photo-approval.ts';
 import { DuplicateProductError, DuplicateVariantError, InventoryError } from '../src/lib/inventory/errors.ts';
 import { uuidV7 } from '../src/lib/inventory/ids.ts';
+import { moneyToCents } from '../src/lib/inventory/normalization.ts';
 import { getProductDetail, listProducts } from '../src/lib/inventory/queries.ts';
 import type { CreateProductInput, VariantFieldsInput } from '../src/lib/inventory/types.ts';
 
@@ -70,6 +76,38 @@ function product(overrides: Partial<CreateProductInput> = {}): CreateProductInpu
     type: 'CALZADO',
     variants: [variant()],
     ...overrides
+  };
+}
+
+function photoApproval(overrides: {
+  sessionId?: string;
+  type?: 'CALZADO' | 'ROPA';
+  size?: string;
+  sizeSystem?: PhotoApprovalInput['variante']['sistemaTalla'];
+  quantity?: number;
+  gtin?: string | null;
+  costCents?: number | null;
+  footLengthMm?: number | null;
+  equivalences?: Record<string, string>;
+} = {}): PhotoApprovalInput {
+  const type = overrides.type ?? 'ROPA';
+  return {
+    sessionId: overrides.sessionId ?? uuidV7(),
+    tipoProducto: type,
+    producto: {
+      marca: 'Nike', modelo: type === 'ROPA' ? 'AIR GRAPHIC TEE' : 'AIR MAX DN8',
+      referencia: type === 'ROPA' ? 'HM0185-489' : 'II7634-001', colorway: 'Azul',
+      genero: 'HOMBRE', tipoPrenda: type === 'ROPA' ? 'Camiseta' : null
+    },
+    variante: {
+      talla: overrides.size ?? (type === 'ROPA' ? 'L' : '45'),
+      sistemaTalla: overrides.sizeSystem ?? (type === 'ROPA' ? 'ALFABETICO' : 'EU'),
+      gtin: overrides.gtin === undefined ? null : overrides.gtin,
+      cantidad: overrides.quantity ?? 1,
+      equivalencias: overrides.equivalences ?? (type === 'CALZADO' ? { EU: '45', CM: '29' } : {}),
+      longitudPieMm: type === 'CALZADO' ? overrides.footLengthMm ?? 290 : null
+    },
+    compra: { costeUnitarioCentimos: overrides.costCents ?? 499, proveedor: 'Nike', fechaCompra: '2026-09-15' }
   };
 }
 
@@ -177,4 +215,175 @@ test('un error transaccional no deja estado parcial', () => usingDatabase(async 
   assert.equal(await count(client, 'variantes_producto'), 0);
   assert.equal(await count(client, 'movimientos_inventario'), 0);
   assert.equal(await count(client, 'niveles_inventario'), 0);
+}));
+
+test('aprobación por fotos crea producto, variante, nivel y compra', () => usingDatabase(async ({ client }) => {
+  const result = await approvePhotoInventory(photoApproval(), client);
+  assert.match(result.productId, /^[0-9a-f-]{36}$/);
+  assert.equal(result.productCreated, true);
+  assert.equal(result.variantCreated, true);
+  assert.equal(result.quantity, 1);
+  assert.equal(await count(client, 'productos'), 1);
+  assert.equal(await count(client, 'variantes_producto'), 1);
+  assert.equal(await count(client, 'niveles_inventario'), 1);
+  assert.equal(await count(client, 'movimientos_inventario'), 1);
+  const movement = await client.execute('SELECT tipo, origen, delta, coste_unitario_centimos, proveedor_original, metadata_json FROM movimientos_inventario');
+  assert.equal(movement.rows[0].tipo, 'COMPRA');
+  assert.equal(movement.rows[0].origen, 'MANUAL');
+  assert.equal(Number(movement.rows[0].delta), 1);
+  assert.equal(Number(movement.rows[0].coste_unitario_centimos), 499);
+  assert.equal(movement.rows[0].proveedor_original, 'Nike');
+  assert.equal(JSON.parse(String(movement.rows[0].metadata_json)).metodo_alta, 'FOTOS');
+}));
+
+test('producto existente reutiliza producto y crea una variante nueva', () => usingDatabase(async ({ client }) => {
+  const first = await approvePhotoInventory(photoApproval({ size: 'L' }), client);
+  const second = await approvePhotoInventory(photoApproval({ size: 'XL' }), client);
+  assert.equal(second.productId, first.productId);
+  assert.equal(second.productCreated, false);
+  assert.equal(second.variantCreated, true);
+  assert.equal(await count(client, 'productos'), 1);
+  assert.equal(await count(client, 'variantes_producto'), 2);
+}));
+
+test('producto y variante existentes incrementan stock sin duplicarlos', () => usingDatabase(async ({ client }) => {
+  const first = await approvePhotoInventory(photoApproval({ quantity: 2 }), client);
+  const second = await approvePhotoInventory(photoApproval({ quantity: 1 }), client);
+  assert.equal(second.productId, first.productId);
+  assert.equal(second.variantId, first.variantId);
+  assert.equal(second.productCreated, false);
+  assert.equal(second.variantCreated, false);
+  assert.equal(second.quantity, 3);
+  assert.equal(await count(client, 'productos'), 1);
+  assert.equal(await count(client, 'variantes_producto'), 1);
+  assert.equal(await count(client, 'movimientos_inventario'), 2);
+}));
+
+test('misma talla EU y mismo GTIN reutilizan variante, suman stock y crean una nueva COMPRA', () => usingDatabase(async ({ client }) => {
+  const first = await approvePhotoInventory(photoApproval({
+    type: 'CALZADO', gtin: '00198481328581', quantity: 1, costCents: 499
+  }), client);
+  const second = await approvePhotoInventory(photoApproval({
+    type: 'CALZADO', gtin: '00198481328581', quantity: 1, costCents: 3_999
+  }), client);
+  assert.equal(second.productId, first.productId);
+  assert.equal(second.variantId, first.variantId);
+  assert.equal(second.variantCreated, false);
+  assert.equal(second.quantity, 2);
+  assert.equal(await count(client, 'variantes_producto'), 1);
+  assert.equal(await count(client, 'movimientos_inventario'), 2);
+  const movements = await client.execute('SELECT tipo, delta, coste_unitario_centimos, proveedor_original FROM movimientos_inventario ORDER BY creado_en_ms');
+  assert.deepEqual(movements.rows.map((row) => [row.tipo, Number(row.delta)]), [['COMPRA', 1], ['COMPRA', 1]]);
+  assert.equal(Number(movements.rows[1].coste_unitario_centimos), 3_999);
+  assert.equal(movements.rows[1].proveedor_original, 'Nike');
+}));
+
+test('el propietario exacto del GTIN se reutiliza aunque su firma histórica no coincida', () => usingDatabase(async ({ client }) => {
+  const first = await approvePhotoInventory(photoApproval({ type: 'CALZADO', gtin: '00198481328581' }), client);
+  await client.execute({
+    sql: 'UPDATE variantes_producto SET firma_opciones_json = ? WHERE id = ?',
+    args: ['{"formato_historico":true}', first.variantId]
+  });
+  const second = await approvePhotoInventory(photoApproval({ type: 'CALZADO', gtin: '00198481328581' }), client);
+  assert.equal(second.variantId, first.variantId);
+  assert.equal(second.quantity, 2);
+  assert.equal(await count(client, 'variantes_producto'), 1);
+}));
+
+test('mismo GTIN con talla diferente bloquea y revierte toda la segunda alta', () => usingDatabase(async ({ client }) => {
+  await approvePhotoInventory(photoApproval({ type: 'CALZADO', size: '42', gtin: '00198481328581' }), client);
+  await assert.rejects(
+    approvePhotoInventory(photoApproval({ type: 'CALZADO', size: '45', gtin: '00198481328581' }), client),
+    (error) => error instanceof InventoryError && error.code === 'GTIN_DUPLICADO' && /42 EU/.test(error.message)
+  );
+  assert.equal(await count(client, 'variantes_producto'), 1);
+  assert.equal(await count(client, 'movimientos_inventario'), 1);
+}));
+
+test('equivalencias secundarias ambiguas no bloquean una variante identificada por EU y GTIN', () => usingDatabase(async ({ client }) => {
+  const first = await approvePhotoInventory(photoApproval({ type: 'CALZADO', gtin: '00198481328581' }), client);
+  const second = await approvePhotoInventory(photoApproval({
+    type: 'CALZADO', gtin: '00198481328581', equivalences: { EU: '45' }, footLengthMm: null
+  }), client);
+  assert.equal(second.variantId, first.variantId);
+  assert.equal(second.quantity, 2);
+  const metadata = await client.execute({ sql: 'SELECT metadata_json FROM movimientos_inventario WHERE id = ?', args: [second.movementId] });
+  assert.deepEqual(JSON.parse(String(metadata.rows[0].metadata_json)).equivalencias_talla, { EU: '45' });
+}));
+
+test('una sesión nueva del mismo GTIN incrementa; repetir esa sesión no vuelve a sumar', () => usingDatabase(async ({ client }) => {
+  const firstInput = photoApproval({ type: 'CALZADO', gtin: '00198481328581' });
+  const secondInput = photoApproval({ type: 'CALZADO', gtin: '00198481328581' });
+  const first = await approvePhotoInventory(firstInput, client);
+  const second = await approvePhotoInventory(secondInput, client);
+  const repeated = await approvePhotoInventory(secondInput, client);
+  assert.notEqual(second.movementId, first.movementId);
+  assert.equal(second.quantity, 2);
+  assert.equal(repeated.movementId, second.movementId);
+  assert.equal(repeated.idempotent, true);
+  assert.equal(repeated.quantity, 2);
+  assert.equal(await count(client, 'movimientos_inventario'), 2);
+}));
+
+test('doble aprobación con la misma sesión es idempotente y no suma dos veces', () => usingDatabase(async ({ client }) => {
+  const input = photoApproval({ quantity: 1 });
+  const first = await approvePhotoInventory(input, client);
+  const second = await approvePhotoInventory(input, client);
+  assert.equal(first.movementId, second.movementId);
+  assert.equal(second.idempotent, true);
+  assert.equal(second.quantity, 1);
+  assert.equal(await count(client, 'movimientos_inventario'), 1);
+}));
+
+test('cantidad inválida se rechaza antes de escribir', () => usingDatabase(async ({ client }) => {
+  const raw = photoApproval() as unknown as Record<string, any>;
+  raw.variante.cantidad = 0;
+  raw.variante.longitudPieCm = null;
+  delete raw.variante.longitudPieMm;
+  assert.throws(() => parsePhotoApprovalPayload(raw), /mayor que cero/);
+  assert.equal(await count(client, 'productos'), 0);
+  assert.equal(await count(client, 'movimientos_inventario'), 0);
+}));
+
+test('GTIN con dígito de control inválido se rechaza antes de escribir', () => usingDatabase(async ({ client }) => {
+  const raw = photoApproval() as unknown as Record<string, any>;
+  raw.variante.gtin = '198480538029';
+  raw.variante.longitudPieCm = null;
+  delete raw.variante.longitudPieMm;
+  assert.throws(() => parsePhotoApprovalPayload(raw), /GTIN no es válido/);
+  assert.equal(await count(client, 'productos'), 0);
+  assert.equal(await count(client, 'movimientos_inventario'), 0);
+}));
+
+test('fallo al insertar movimiento revierte producto, variante y nivel', () => usingDatabase(async ({ client }) => {
+  await client.execute(`CREATE TRIGGER fallo_compra_fotos BEFORE INSERT ON movimientos_inventario
+    WHEN NEW.clave_idempotencia LIKE 'alta-fotos:%' BEGIN SELECT RAISE(ABORT, 'fallo simulado'); END`);
+  await assert.rejects(approvePhotoInventory(photoApproval(), client), /fallo simulado/);
+  assert.equal(await count(client, 'productos'), 0);
+  assert.equal(await count(client, 'variantes_producto'), 0);
+  assert.equal(await count(client, 'niveles_inventario'), 0);
+  assert.equal(await count(client, 'movimientos_inventario'), 0);
+}));
+
+test('costes decimales 4,99 y 39,99 se convierten a céntimos enteros', () => {
+  assert.equal(moneyToCents('4,99', 'Coste'), 499);
+  assert.equal(moneyToCents('39,99', 'Coste'), 3999);
+});
+
+test('ropa guarda talla L sin longitud de pie y conserva tipo de prenda en metadata', () => usingDatabase(async ({ client }) => {
+  await approvePhotoInventory(photoApproval({ type: 'ROPA', size: 'L', sizeSystem: 'ALFABETICO' }), client);
+  const variant = await client.execute('SELECT etiqueta_talla, sistema_talla, longitud_pie_mm FROM variantes_producto');
+  assert.equal(variant.rows[0].etiqueta_talla, 'L');
+  assert.equal(variant.rows[0].sistema_talla, 'ALFABETICO');
+  assert.equal(variant.rows[0].longitud_pie_mm, null);
+  const movement = await client.execute('SELECT metadata_json FROM movimientos_inventario');
+  assert.equal(JSON.parse(String(movement.rows[0].metadata_json)).tipo_prenda, 'Camiseta');
+}));
+
+test('calzado guarda talla 45 EU y longitud de pie 290 mm', () => usingDatabase(async ({ client }) => {
+  await approvePhotoInventory(photoApproval({ type: 'CALZADO', size: '45', sizeSystem: 'EU', footLengthMm: 290 }), client);
+  const variant = await client.execute('SELECT etiqueta_talla, sistema_talla, longitud_pie_mm FROM variantes_producto');
+  assert.equal(variant.rows[0].etiqueta_talla, '45');
+  assert.equal(variant.rows[0].sistema_talla, 'EU');
+  assert.equal(Number(variant.rows[0].longitud_pie_mm), 290);
 }));

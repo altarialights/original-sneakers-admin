@@ -14,9 +14,9 @@ const fields = [
 ---
 
 <div>
-  <form method="get" class="hidden flex-wrap items-center gap-2 md:flex">
+  <form method="get" class="hidden flex-wrap items-end gap-2 md:flex">
     {current.search && <input type="hidden" name="q" value={current.search} />}
-    {fields.map((field) => <label><span class="sr-only">{field.label}</span><select name={field.name} class="min-h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-600 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10">{field.options.map((option) => <option value={option.value} selected={option.value === field.value}>{option.label}</option>)}</select></label>)}
+    {fields.map((field) => <label><span class="mb-1.5 block text-xs font-semibold text-slate-600">{field.label}</span><select name={field.name} class="min-h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-600 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10">{field.options.map((option) => <option value={option.value} selected={option.value === field.value}>{option.label}</option>)}</select></label>)}
     <button type="submit" class="min-h-11 rounded-xl bg-slate-950 px-4 text-sm font-semibold text-white">Aplicar</button>
     <a href="/stock" class="grid min-h-11 place-items-center rounded-xl px-3 text-sm font-medium text-slate-500 hover:bg-slate-100">Limpiar</a>
   </form>

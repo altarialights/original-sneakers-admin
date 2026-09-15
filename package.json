@@ -13,7 +13,8 @@
     "db:migrate": "node --env-file-if-exists=.env --experimental-strip-types scripts/db.ts migrate",
     "db:status": "node --env-file-if-exists=.env --experimental-strip-types scripts/db.ts status",
     "stock:importar": "node --env-file-if-exists=.env --experimental-strip-types scripts/importar-stock-inicial.ts",
-    "test": "node --expose-gc --experimental-strip-types --test tests/stock-import.test.ts tests/inventory.test.ts",
+    "diagnose:photos": "node --env-file-if-exists=.env --env-file-if-exists=.env.local --experimental-strip-types scripts/diagnosticar-deteccion.ts",
+    "test": "node --expose-gc --experimental-strip-types --test tests/stock-import.test.ts tests/inventory.test.ts tests/product-detection.test.ts tests/content.test.ts",
     "preview": "astro preview",
     "astro": "astro"
   },
@@ -21,7 +22,9 @@
     "@astrojs/vercel": "^11.0.10",
     "@libsql/client": "^0.17.4",
     "@tailwindcss/vite": "^4.3.3",
+    "@vercel/blob": "^2.8.0",
     "astro": "^7.2.10",
+    "openai": "^7.15.0",
     "tailwindcss": "^4.3.3",
     "xlsx": "^0.18.5",
     "zod": "^4.6.5"

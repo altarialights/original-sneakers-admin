@@ -39,13 +39,58 @@ export default defineConfig({
                 access: "secret",
                 min: 1,
             }),
+
+            OPENAI_API_KEY: envField.string({
+                context: "server",
+                access: "secret",
+                min: 1,
+            }),
+
+            OPENAI_VISION_MODEL: envField.string({
+                context: "server",
+                access: "secret",
+                optional: true,
+                min: 1,
+            }),
+
+            OPENAI_CONTENT_TEXT_MODEL: envField.string({
+                context: "server",
+                access: "secret",
+                optional: true,
+                min: 1,
+            }),
+
+            OPENAI_CONTENT_IMAGE_MODEL: envField.string({
+                context: "server",
+                access: "secret",
+                optional: true,
+                min: 1,
+            }),
+
+            BLOB_STORE_ID: envField.string({
+                context: "server",
+                access: "secret",
+                min: 1,
+            }),
+
+            BLOB_WEBHOOK_PUBLIC_KEY: envField.string({
+                context: "server",
+                access: "secret",
+                min: 1,
+            }),
+
+            VERCEL_OIDC_TOKEN: envField.string({
+                context: "server",
+                access: "secret",
+                min: 1,
+            }),
         },
     },
 
     vite: {
         plugins: [tailwindcss()],
         ssr: {
-            noExternal: ["zod", "@libsql/client"],
+            noExternal: ["zod", "@libsql/client", "openai", "@vercel/blob"],
         },
     },
 });

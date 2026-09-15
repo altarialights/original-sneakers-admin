@@ -7,11 +7,15 @@ import PageHeader from '../../components/ui/PageHeader.astro';
 import ProductThumbnail from '../../components/ui/ProductThumbnail.astro';
 import StatusBadge from '../../components/ui/StatusBadge.astro';
 import { formatMoney, getProductDetail } from '../../lib/inventory/queries.ts';
+import { getProductContent } from '../../lib/content/queries.ts';
 
 export const prerender = false;
 let loadError = false;
 let product: Awaited<ReturnType<typeof getProductDetail>> = null;
-try { product = Astro.params.id ? await getProductDetail(Astro.params.id) : null; } catch (error) { console.error('[inventory] No se pudo cargar el detalle de stock.', error); loadError = true; }
+let content: Awaited<ReturnType<typeof getProductContent>> = null;
+try {
+  if (Astro.params.id) [product, content] = await Promise.all([getProductDetail(Astro.params.id), getProductContent(Astro.params.id)]);
+} catch (error) { console.error('[inventory] No se pudo cargar el detalle de stock.', error); loadError = true; }
 if (!loadError && !product) Astro.response.status = 404;
 const success = Astro.url.searchParams.get('success');
 const typeLabels = { CALZADO: 'Calzado', ROPA: 'Ropa', ACCESORIO: 'Accesorio', OTRO: 'Otro' } as const;
@@ -31,7 +35,17 @@ const ageLabels = { BEBE: 'Bebé', INFANTIL: 'Infantil', ADULTO: 'Adulto', DESCO
 
     <div class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(22rem,.8fr)]">
       <section class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
-        {product.images.length > 0 ? <div class="grid gap-3 sm:grid-cols-[4.5rem_1fr]"><div class="order-2 flex gap-2 sm:order-1 sm:flex-col">{product.images.map((image) => <img src={image} alt={product.name} class="aspect-square w-16 rounded-xl object-cover ring-1 ring-slate-200 sm:w-full" loading="lazy" />)}</div><div class="order-1 sm:order-2"><ProductThumbnail imageUrl={product.images[0]} alt={product.name} size="lg" /></div></div> : <ProductThumbnail alt={product.name} size="lg" />}
+        {product.images.length > 0 ? <div data-product-gallery class="grid gap-3 sm:grid-cols-[4.5rem_1fr]">
+          <div class="order-2 flex gap-2 overflow-x-auto pb-1 sm:order-1 sm:flex-col sm:overflow-visible">{product.images.map((image, index) => <button type="button" data-gallery-thumb data-image-url={image} aria-label={`Mostrar imagen ${index + 1}`} aria-pressed={index === 0 ? 'true' : 'false'} class:list={['shrink-0 rounded-xl ring-2 ring-offset-2 transition', index === 0 ? 'ring-slate-950' : 'ring-transparent hover:ring-slate-300']}><img src={image} alt="" class="aspect-square w-16 rounded-xl object-cover ring-1 ring-slate-200 sm:w-full" loading="lazy" /></button>)}</div>
+          <div class="order-1 sm:order-2">
+            <div class="aspect-square overflow-hidden rounded-2xl bg-stone-100"><img data-gallery-main src={product.images[0]} alt={product.name} class="size-full object-cover" /></div>
+            <div class="mt-3 grid grid-cols-2 gap-2">
+              <a data-download-current href={`${product.images[0]}?download=1`} class="inline-grid min-h-11 place-items-center rounded-xl border border-slate-200 px-4 text-sm font-semibold hover:bg-slate-50">Descargar una</a>
+              <button type="button" data-download-all class="min-h-11 rounded-xl bg-slate-950 px-4 text-sm font-semibold text-white disabled:opacity-50">Descargar todas</button>
+            </div>
+            <p data-download-status class="mt-2 hidden text-xs text-slate-500" role="status"></p>
+          </div>
+        </div> : <ProductThumbnail alt={product.name} size="lg" />}
         <p class="mt-3 text-xs text-slate-400">{product.images.length > 0 ? `${product.images.length} imagen${product.images.length === 1 ? '' : 'es'}` : 'Sin imágenes todavía'}</p>
       </section>
       <section class="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
@@ -48,6 +62,19 @@ const ageLabels = { BEBE: 'Bebé', INFANTIL: 'Infantil', ADULTO: 'Adulto', DESCO
       <div class="divide-y divide-slate-100 md:hidden">{product.variants.map((variant) => <article class="p-4"><div class="flex items-center justify-between"><p class="text-lg font-semibold">{variant.size} <span class="text-xs text-slate-400">{variant.sizeSystem}</span></p><StatusBadge status={variant.quantity > 0 ? 'Disponible' : 'Sin stock'} compact /></div><dl class="mt-4 grid grid-cols-3 gap-3"><div><dt class="text-xs text-slate-400">Cantidad</dt><dd class="mt-1 text-sm font-semibold">{variant.quantity}</dd></div><div><dt class="text-xs text-slate-400">PVP</dt><dd class="mt-1 text-sm font-semibold">{formatMoney(variant.compareAtPriceCents ?? variant.priceCents)}</dd></div><div><dt class="text-xs text-slate-400">Coste</dt><dd class="mt-1 text-sm font-semibold">{formatMoney(variant.costCents)}</dd></div></dl><p class="mt-3 text-xs text-slate-500">UPC: {variant.barcode ?? 'No disponible'} · {variant.locations.map((location) => location.name).join(', ') || 'Sin ubicación'}</p>{product.state !== 'ARCHIVADO' && <div class="mt-3 grid grid-cols-2 gap-2"><button type="button" data-variant-edit data-variant={JSON.stringify(variant)} class="min-h-11 rounded-xl border border-slate-200 text-sm font-semibold">Editar</button><button type="button" data-variant-stock data-variant-id={variant.id} data-size={variant.size} data-quantity={variant.quantity} data-location-id={variant.locations[0]?.id} class="min-h-11 rounded-xl bg-slate-100 text-sm font-semibold">Ajustar stock</button></div>}</article>)}</div>
     </section>
 
+    <section class="mt-5 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div><h2 class="text-lg font-semibold">Textos de publicación</h2><p class="mt-1 text-sm text-slate-500">Última versión editorial guardada para este producto.</p></div>
+        <a href={`/contenido/${encodeURIComponent(product.id)}`} class="inline-grid min-h-11 place-items-center rounded-xl border border-slate-200 px-4 text-sm font-semibold hover:bg-slate-50">Editar textos</a>
+      </div>
+      {content?.hasTexts ? <div class="mt-5 grid gap-4 lg:grid-cols-2">
+        <article class="rounded-xl bg-slate-50 p-4"><h3 class="text-sm font-semibold">Título comercial</h3><p class="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700">{content.texts.tituloComercial || 'Sin contenido'}</p></article>
+        <article class="rounded-xl bg-slate-50 p-4"><h3 class="text-sm font-semibold">SEO title</h3><p class="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700">{content.texts.seoTitle || 'Sin contenido'}</p></article>
+        <article class="rounded-xl bg-slate-50 p-4 lg:col-span-2"><h3 class="text-sm font-semibold">Descripción completa</h3><p class="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700">{content.texts.descripcionCompleta || 'Sin contenido'}</p></article>
+        <article class="rounded-xl bg-slate-50 p-4 lg:col-span-2"><h3 class="text-sm font-semibold">Meta description</h3><p class="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700">{content.texts.metaDescription || 'Sin contenido'}</p></article>
+      </div> : <p class="mt-5 rounded-xl bg-slate-50 p-4 text-sm text-slate-600">Todavía no hay textos generados para este producto.</p>}
+    </section>
+
     <Modal id="adjust-stock" title="Ajustar stock" description={`${product.name} · el cambio quedará registrado`}><label class="block"><span class="mb-1.5 block text-sm font-medium">Talla</span><select data-size-select class="min-h-12 w-full rounded-xl border border-slate-200 bg-white px-3">{product.variants.map((variant) => <option value={variant.id} data-quantity={variant.quantity} data-location-id={variant.locations[0]?.id}>{variant.size} {variant.sizeSystem}</option>)}</select></label><p class="mt-4 rounded-xl bg-slate-50 p-3 text-sm">Cantidad actual: <strong data-stock-current>{product.variants[0]?.quantity ?? 0}</strong></p><label class="mt-4 block"><span class="mb-1.5 block text-sm font-medium">Motivo</span><select data-stock-reason class="min-h-12 w-full rounded-xl border border-slate-200 bg-white px-3"><option value="VENTA">Venta</option><option value="COMPRA">Compra / entrada</option><option value="AJUSTE">Ajuste</option><option value="DEVOLUCION">Devolución</option></select></label><label class="mt-4 block"><span class="mb-1.5 block text-sm font-medium">Cambio de unidades</span><input data-stock-delta type="number" step="1" value="-1" class="min-h-12 w-full rounded-xl border border-slate-200 px-3" /></label><p data-stock-error class="mt-3 hidden text-sm font-medium text-rose-700"></p><div class="mt-6 grid grid-cols-2 gap-2"><button type="button" data-dialog-close class="min-h-12 rounded-xl border border-slate-200 font-semibold">Cancelar</button><button type="button" data-stock-save class="min-h-12 rounded-xl bg-slate-950 font-semibold text-white">Guardar</button></div></Modal>
 
     <Modal id="edit-product" title="Editar producto" description="Estos cambios no modifican el stock."><div data-edit-product-form class="grid gap-4 sm:grid-cols-2"><label class="text-sm font-medium">Marca<input data-field="brand" value={product.brand} class="mt-1.5 min-h-11 w-full rounded-xl border border-slate-200 px-3" /></label><label class="text-sm font-medium">Modelo<input data-field="model" value={product.model} class="mt-1.5 min-h-11 w-full rounded-xl border border-slate-200 px-3" /></label><label class="text-sm font-medium">Referencia<input data-field="reference" value={product.reference} class="mt-1.5 min-h-11 w-full rounded-xl border border-slate-200 px-3" /></label><label class="text-sm font-medium">Colorway<input data-field="colorway" value={product.colorway ?? ''} class="mt-1.5 min-h-11 w-full rounded-xl border border-slate-200 px-3" /></label><label class="text-sm font-medium">Tipo<select data-field="type" class="mt-1.5 min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3"><option value="CALZADO" selected={product.type === 'CALZADO'}>Calzado</option><option value="ROPA" selected={product.type === 'ROPA'}>Ropa</option><option value="ACCESORIO" selected={product.type === 'ACCESORIO'}>Accesorio</option><option value="OTRO" selected={product.type === 'OTRO'}>Otro</option></select></label></div><p data-edit-product-error class="mt-3 hidden text-sm font-medium text-rose-700"></p><div class="mt-6 flex justify-end gap-2"><button type="button" data-dialog-close class="min-h-11 rounded-xl border border-slate-200 px-4 font-semibold">Cancelar</button><button type="button" data-edit-product-save class="min-h-11 rounded-xl bg-slate-950 px-4 font-semibold text-white">Guardar</button></div></Modal>
@@ -59,6 +86,42 @@ const ageLabels = { BEBE: 'Bebé', INFANTIL: 'Infantil', ADULTO: 'Adulto', DESCO
     <Modal id="archive-product" title="Dar de baja producto" description="El producto conservará todo su historial."><div class="rounded-xl bg-rose-50 p-3 text-sm font-semibold text-rose-800">{product.name}</div>{product.stock > 0 && <p class="mt-3 text-sm text-slate-600">Este producto todavía tiene {product.stock} unidades. Puedes cancelar o darlo de baja igualmente.</p>}<p data-archive-error class="mt-3 hidden text-sm font-medium text-rose-700"></p><div class="mt-6 grid grid-cols-2 gap-2"><button type="button" data-dialog-close class="min-h-12 rounded-xl border border-slate-200 font-semibold">Cancelar</button><button type="button" data-archive-save class="min-h-12 rounded-xl bg-rose-600 font-semibold text-white">Dar de baja</button></div></Modal>
 
     <script is:inline define:vars={{ productId: product.id, productStock: product.stock }}>
+      const galleryImages = [...document.querySelectorAll('[data-gallery-thumb]')].map((button) => button.dataset.imageUrl).filter(Boolean);
+      const mainImage = document.querySelector('[data-gallery-main]');
+      const currentDownload = document.querySelector('[data-download-current]');
+      document.querySelectorAll('[data-gallery-thumb]').forEach((button) => button.addEventListener('click', () => {
+        const imageUrl = button.dataset.imageUrl;
+        if (!imageUrl || !mainImage || !currentDownload) return;
+        mainImage.src = imageUrl;
+        currentDownload.href = `${imageUrl}?download=1`;
+        document.querySelectorAll('[data-gallery-thumb]').forEach((thumb) => {
+          const selected = thumb === button;
+          thumb.setAttribute('aria-pressed', String(selected));
+          thumb.classList.toggle('ring-slate-950', selected);
+          thumb.classList.toggle('ring-transparent', !selected);
+        });
+      }));
+      document.querySelector('[data-download-all]')?.addEventListener('click', async (event) => {
+        const button = event.currentTarget;
+        const status = document.querySelector('[data-download-status]');
+        button.disabled = true;
+        if (status) { status.classList.remove('hidden'); status.textContent = `Preparando 0 de ${galleryImages.length} imágenes…`; }
+        try {
+          for (const [index, imageUrl] of galleryImages.entries()) {
+            const response = await fetch(`${imageUrl}?download=1`);
+            if (!response.ok) throw new Error(`No se pudo descargar la imagen ${index + 1}.`);
+            const blobUrl = URL.createObjectURL(await response.blob());
+            const disposition = response.headers.get('content-disposition') || '';
+            const filename = disposition.match(/filename="([^"]+)"/)?.[1] || `imagen-${index + 1}.webp`;
+            const anchor = document.createElement('a'); anchor.href = blobUrl; anchor.download = filename; document.body.append(anchor); anchor.click(); anchor.remove();
+            window.setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+            if (status) status.textContent = `Preparando ${index + 1} de ${galleryImages.length} imágenes…`;
+          }
+          if (status) status.textContent = `${galleryImages.length} imágenes descargadas.`;
+        } catch (cause) {
+          if (status) status.textContent = cause instanceof Error ? cause.message : 'No se pudieron descargar todas las imágenes.';
+        } finally { button.disabled = false; }
+      });
       const jsonRequest = async (url, method, body) => { const response = await fetch(url, { method, headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }); const data = await response.json(); if (!response.ok) throw new Error(data.message || 'No hemos podido guardar los cambios.'); return data; };
       const fieldValues = (container) => Object.fromEntries([...container.querySelectorAll('[data-field]')].map((field) => [field.dataset.field, field.value.trim()]));
       const reloadWith = (message) => window.location.assign(`${window.location.pathname}?success=${encodeURIComponent(message)}`);
