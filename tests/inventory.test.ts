@@ -387,3 +387,19 @@ test('calzado guarda talla 45 EU y longitud de pie 290 mm', () => usingDatabase(
   assert.equal(variant.rows[0].sistema_talla, 'EU');
   assert.equal(Number(variant.rows[0].longitud_pie_mm), 290);
 }));
+
+test('Añadir talla reutiliza los datos conocidos y los mantiene editables', async () => {
+  const page = await readFile(new URL('../src/pages/stock/[id].astro', import.meta.url), 'utf8');
+  assert.match(page, /const addVariantDefaults =/);
+  assert.match(page, /compareAtPriceCents \?\? defaultVariant\.priceCents/);
+  assert.match(page, /defaultVariant\?\.costCents/);
+  assert.match(page, /defaultVariant\?\.barcode/);
+  assert.match(page, /defaultLocation\?\.name/);
+  assert.match(page, /data-field="pvp" value=\{addVariantDefaults\.pvp\}/);
+  assert.match(page, /data-field="offer" value=\{addVariantDefaults\.offer\}/);
+  assert.match(page, /data-field="cost" value=\{addVariantDefaults\.cost\}/);
+  assert.match(page, /data-field="barcode" value=\{addVariantDefaults\.barcode\}/);
+  assert.match(page, /fillAddVariantDefaults/);
+  assert.match(page, /values\.gender = addVariantGender/);
+  assert.match(page, /values\.ageGroup = addVariantAgeGroup/);
+});
