@@ -5,7 +5,6 @@ type DetectionSecret =
   | 'OPENAI_API_KEY'
   | 'OPENAI_VISION_MODEL'
   | 'BLOB_STORE_ID'
-  | 'BLOB_WEBHOOK_PUBLIC_KEY'
   | 'VERCEL_OIDC_TOKEN';
 
 type SecretReader = (name: DetectionSecret) => string | undefined;
@@ -48,6 +47,27 @@ export interface BlobOidcOptions {
   storeId: string;
 }
 
+export interface BlobConfigurationPresence {
+  blobStoreIdConfigured: boolean;
+  oidcConfigured: boolean;
+  readWriteTokenConfigured: boolean;
+}
+
+export async function getBlobConfigurationPresence(
+  environment: NodeJS.ProcessEnv = process.env,
+  fallback?: SecretReader
+): Promise<BlobConfigurationPresence> {
+  const [storeId, oidcToken] = await Promise.all([
+    readDetectionSecret('BLOB_STORE_ID', environment, fallback),
+    readDetectionSecret('VERCEL_OIDC_TOKEN', environment, fallback)
+  ]);
+  return {
+    blobStoreIdConfigured: Boolean(storeId),
+    oidcConfigured: Boolean(oidcToken),
+    readWriteTokenConfigured: Boolean(environment.BLOB_READ_WRITE_TOKEN?.trim())
+  };
+}
+
 export async function getBlobOidcOptions(
   environment: NodeJS.ProcessEnv = process.env,
   fallback?: SecretReader
@@ -59,21 +79,9 @@ export async function getBlobOidcOptions(
   if (!oidcToken || !storeId) {
     throw new ProductDetectionError(
       'El almacenamiento temporal no está configurado. En local, ejecuta: pnpm dlx vercel env pull .env.local',
-      'BLOB_OIDC_NO_CONFIGURADO',
+      'BLOB_CONFIG_ERROR',
       503
     );
   }
   return { oidcToken, storeId };
-}
-
-export async function getBlobWebhookPublicKey(environment: NodeJS.ProcessEnv = process.env): Promise<string> {
-  const key = await readDetectionSecret('BLOB_WEBHOOK_PUBLIC_KEY', environment);
-  if (!key) {
-    throw new ProductDetectionError(
-      'El almacenamiento temporal no está configurado. Falta BLOB_WEBHOOK_PUBLIC_KEY.',
-      'BLOB_WEBHOOK_NO_CONFIGURADO',
-      503
-    );
-  }
-  return key;
 }

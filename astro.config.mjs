@@ -73,12 +73,6 @@ export default defineConfig({
                 min: 1,
             }),
 
-            BLOB_WEBHOOK_PUBLIC_KEY: envField.string({
-                context: "server",
-                access: "secret",
-                min: 1,
-            }),
-
             VERCEL_OIDC_TOKEN: envField.string({
                 context: "server",
                 access: "secret",

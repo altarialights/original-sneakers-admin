@@ -21,7 +21,8 @@ import {
   resolveVisualContentIdentity,
   visualContentFingerprint
 } from '../src/lib/product-detection/content-status.ts';
-import { getBlobOidcOptions, getOpenAIConfig } from '../src/lib/product-detection/env.ts';
+import { getBlobConfigurationPresence, getBlobOidcOptions, getOpenAIConfig } from '../src/lib/product-detection/env.ts';
+import { blobFailure, sanitizeBlobError } from '../src/lib/product-detection/errors.ts';
 import { detectImageMime, validateImageBytes, validateImageMetadata } from '../src/lib/product-detection/files.ts';
 import { checkDetectionDuplicates } from '../src/lib/product-detection/duplicates.ts';
 import { extractProductWithOpenAI, publicOpenAIError } from '../src/lib/product-detection/openai.ts';
@@ -708,6 +709,41 @@ test('la ausencia de BLOB_READ_WRITE_TOKEN no rompe la configuración OIDC', asy
   const result = await getBlobOidcOptions({ VERCEL_OIDC_TOKEN: 'oidc-test', BLOB_STORE_ID: 'store-test' });
   assert.deepEqual(result, { oidcToken: 'oidc-test', storeId: 'store-test' });
   assert.equal('token' in result, false);
+});
+
+test('el diagnóstico de configuración Blob solo expone presencia booleana', async () => {
+  const result = await getBlobConfigurationPresence({
+    BLOB_STORE_ID: 'store-test',
+    VERCEL_OIDC_TOKEN: 'oidc-test'
+  });
+  assert.deepEqual(result, {
+    blobStoreIdConfigured: true,
+    oidcConfigured: true,
+    readWriteTokenConfigured: false
+  });
+  assert.doesNotMatch(JSON.stringify(result), /store-test|oidc-test/);
+});
+
+test('clasifica por separado configuración, autenticación y proveedor Blob', () => {
+  assert.equal(blobFailure(new Error('No blob credentials found')).code, 'BLOB_CONFIG_ERROR');
+  assert.equal(blobFailure(Object.assign(new Error('Unauthorized OIDC token'), { status: 401 })).code, 'BLOB_AUTH_ERROR');
+  assert.equal(blobFailure(Object.assign(new Error('Service unavailable'), { status: 503 })).code, 'BLOB_PROVIDER_ERROR');
+});
+
+test('el diagnóstico Blob conserva datos útiles sin filtrar secretos', () => {
+  const secret = 'vercel_blob_rw_sensitive-value';
+  const error = Object.assign(new Error(`Unauthorized Bearer ${secret}`), {
+    status: 401,
+    code: 'unauthorized',
+    cause: new Error(`upstream rejected ${secret}`)
+  });
+  const result = sanitizeBlobError(error, [secret]);
+  assert.equal(result.class, 'Error');
+  assert.equal(result.status, 401);
+  assert.equal(result.code, 'unauthorized');
+  assert.equal(result.cause && typeof result.cause === 'object' ? result.cause.class : null, 'Error');
+  assert.doesNotMatch(JSON.stringify(result), /sensitive-value/);
+  assert.match(result.message, /REDACTED/);
 });
 
 test('la autorización Blob usa OIDC y nunca un read-write token', async () => {
