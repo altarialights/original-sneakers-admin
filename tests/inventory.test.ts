@@ -402,4 +402,8 @@ test('Añadir talla reutiliza los datos conocidos y los mantiene editables', asy
   assert.match(page, /fillAddVariantDefaults/);
   assert.match(page, /values\.gender = addVariantGender/);
   assert.match(page, /values\.ageGroup = addVariantAgeGroup/);
+  assert.match(page, /productType === 'ROPA'/);
+  assert.match(page, /label\.firstChild\.textContent = 'Referencia'/);
+  assert.match(page, /addVariantIdentifier\.value = productReference/);
+  assert.match(page, /addVariantIdentifier\.removeAttribute\('data-field'\)/);
 });
