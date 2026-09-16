@@ -24,7 +24,7 @@ TURSO_DATABASE_URL=...
 TURSO_AUTH_TOKEN=...
 ```
 
-No se utilizan ni se requieren `BLOB_READ_WRITE_TOKEN` ni `BLOB_WEBHOOK_PUBLIC_KEY`. Este flujo no configura callbacks de finalización: emite una URL firmada y el navegador sube directamente a un Blob privado. Vercel proporciona OIDC en Preview/Production. En desarrollo, enlaza el proyecto y descarga un token vigente:
+La aplicación no pasa manualmente `BLOB_READ_WRITE_TOKEN`, `VERCEL_OIDC_TOKEN` ni `BLOB_WEBHOOK_PUBLIC_KEY` a la subida. Este flujo no configura callbacks de finalización: `@vercel/blob` obtiene primero el OIDC nativo del request de Vercel, emite una URL firmada y el navegador sube directamente a un Blob privado. `BLOB_STORE_ID` identifica el store conectado. En desarrollo, enlaza el proyecto y descarga la configuración local:
 
 ```sh
 pnpm dlx vercel link

@@ -37,6 +37,9 @@ export function blobFailure(error: unknown): ProductDetectionError {
     || detail.includes('jwt')
     || detail.includes('unauthorized')
     || detail.includes('forbidden')
+    || detail.includes('access denied')
+    || detail.includes('blobaccesserror')
+    || detail.includes('oidcenvironmentnotallowed')
     || /\b(?:401|403)\b/.test(detail)
   ) {
     return new ProductDetectionError(

@@ -8,22 +8,22 @@ import {
 } from './config.ts';
 import { assertSessionBlobPath, parseTemporaryBlobPath, sessionBlobPrefix } from './blob-paths.ts';
 import { blobFailure, ProductDetectionError } from './errors.ts';
-import { getBlobOidcOptions } from './env.ts';
-import type { BlobOidcOptions } from './env.ts';
 import { imageDataUrl, readLimitedStream, validateImageBytes, validateImageMetadata } from './files.ts';
 
-type OidcOptions = BlobOidcOptions;
+type OidcOptions = { oidcToken: string; storeId: string };
+
+interface TemporaryUploadTokenOptions {
+  issuer?: typeof issueSignedToken;
+}
 
 export async function issueTemporaryUploadToken(
   pathname: string,
-  auth?: OidcOptions,
-  issuer: typeof issueSignedToken = issueSignedToken
+  options: TemporaryUploadTokenOptions = {}
 ) {
   parseTemporaryBlobPath(pathname);
-  const oidc = auth ?? await getBlobOidcOptions();
+  const issuer = options.issuer ?? issueSignedToken;
   try {
     return await issuer({
-      ...oidc,
       pathname,
       operations: ['put'],
       allowedContentTypes: [...ALLOWED_IMAGE_MIME_TYPES],
@@ -44,7 +44,7 @@ export async function readPrivateSessionImages(
     getter?: typeof get;
   } = {}
 ): Promise<Array<{ kind: SourceDataImageKind; dataUrl: string }>> {
-  const auth = options.auth ?? await getBlobOidcOptions();
+  const auth = options.auth ?? {};
   const getter = options.getter ?? get;
   try {
     return await Promise.all(sourceDataImageKinds(productKind).map(async (kind) => {
@@ -91,7 +91,7 @@ export async function deleteTemporarySession(
     deleter?: typeof del;
   } = {}
 ): Promise<number> {
-  const oidc = options.auth ?? await getBlobOidcOptions();
+  const oidc = options.auth ?? {};
   const lister = options.lister ?? list;
   const deleter = options.deleter ?? del;
   const prefix = sessionBlobPrefix(sessionId);
@@ -123,7 +123,7 @@ export async function deleteTemporarySourceImages(
     deleter?: typeof del;
   } = {}
 ): Promise<number> {
-  const oidc = options.auth ?? await getBlobOidcOptions();
+  const oidc = options.auth ?? {};
   const lister = options.lister ?? list;
   const deleter = options.deleter ?? del;
   const prefix = sessionBlobPrefix(sessionId);

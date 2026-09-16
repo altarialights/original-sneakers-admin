@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
+import { BlobAccessError, BlobServiceNotAvailable } from '@vercel/blob';
 import type OpenAI from 'openai';
 import {
   assertSessionBlobPath,
@@ -21,7 +22,7 @@ import {
   resolveVisualContentIdentity,
   visualContentFingerprint
 } from '../src/lib/product-detection/content-status.ts';
-import { getBlobConfigurationPresence, getBlobOidcOptions, getOpenAIConfig } from '../src/lib/product-detection/env.ts';
+import { getBlobConfigurationPresence, getOpenAIConfig } from '../src/lib/product-detection/env.ts';
 import { blobFailure, sanitizeBlobError } from '../src/lib/product-detection/errors.ts';
 import { detectImageMime, validateImageBytes, validateImageMetadata } from '../src/lib/product-detection/files.ts';
 import { checkDetectionDuplicates } from '../src/lib/product-detection/duplicates.ts';
@@ -705,23 +706,17 @@ test('construye paths Blob seguros y rechaza traversal', () => {
   assert.throws(() => parseTemporaryBlobPath(`altas-temporales/${SESSION_ID}/../ticket.jpg`), /no es válida/);
 });
 
-test('la ausencia de BLOB_READ_WRITE_TOKEN no rompe la configuración OIDC', async () => {
-  const result = await getBlobOidcOptions({ VERCEL_OIDC_TOKEN: 'oidc-test', BLOB_STORE_ID: 'store-test' });
-  assert.deepEqual(result, { oidcToken: 'oidc-test', storeId: 'store-test' });
-  assert.equal('token' in result, false);
-});
-
-test('el diagnóstico de configuración Blob solo expone presencia booleana', async () => {
-  const result = await getBlobConfigurationPresence({
+test('el diagnóstico Blob distingue variables visibles de disponibilidad OIDC nativa', () => {
+  const result = getBlobConfigurationPresence({
     BLOB_STORE_ID: 'store-test',
-    VERCEL_OIDC_TOKEN: 'oidc-test'
+    BLOB_READ_WRITE_TOKEN: 'legacy-test'
   });
   assert.deepEqual(result, {
-    blobStoreIdConfigured: true,
-    oidcConfigured: true,
-    readWriteTokenConfigured: false
+    storeIdConfigured: true,
+    oidcEnvVarVisible: false,
+    legacyReadWriteTokenVisible: true
   });
-  assert.doesNotMatch(JSON.stringify(result), /store-test|oidc-test/);
+  assert.doesNotMatch(JSON.stringify(result), /store-test|legacy-test/);
 });
 
 test('clasifica por separado configuración, autenticación y proveedor Blob', () => {
@@ -746,21 +741,76 @@ test('el diagnóstico Blob conserva datos útiles sin filtrar secretos', () => {
   assert.match(result.message, /REDACTED/);
 });
 
-test('la autorización Blob usa OIDC y nunca un read-write token', async () => {
+test('producción sin VERCEL_OIDC_TOKEN visible delega la autenticación a issueSignedToken', async () => {
+  const previous = {
+    VERCEL_ENV: process.env.VERCEL_ENV,
+    BLOB_STORE_ID: process.env.BLOB_STORE_ID,
+    VERCEL_OIDC_TOKEN: process.env.VERCEL_OIDC_TOKEN,
+    BLOB_READ_WRITE_TOKEN: process.env.BLOB_READ_WRITE_TOKEN
+  };
   let received: Record<string, unknown> | undefined;
   const issuer = async (options: Record<string, unknown>) => {
     received = options;
     return { delegationToken: 'delegation', clientSigningToken: 'signing', validUntil: Date.now() + 1000 };
   };
-  await issueTemporaryUploadToken(
-    buildTemporaryBlobPath(SESSION_ID, 'CALZADO', 'ticket', 'image/png'),
-    { oidcToken: 'oidc-test', storeId: 'store-test' },
-    issuer as never
+  try {
+    process.env.VERCEL_ENV = 'production';
+    process.env.BLOB_STORE_ID = 'store-test';
+    delete process.env.VERCEL_OIDC_TOKEN;
+    process.env.BLOB_READ_WRITE_TOKEN = 'legacy-test';
+    await issueTemporaryUploadToken(
+      buildTemporaryBlobPath(SESSION_ID, 'CALZADO', 'ticket', 'image/png'),
+      { issuer: issuer as never }
+    );
+    assert.ok(received);
+    assert.equal('oidcToken' in received, false);
+    assert.equal('storeId' in received, false);
+    assert.equal('token' in received, false);
+    assert.deepEqual(received.operations, ['put']);
+  } finally {
+    for (const [name, value] of Object.entries(previous)) {
+      if (value === undefined) delete process.env[name];
+      else process.env[name] = value;
+    }
+  }
+});
+
+test('un error de autenticación real del SDK se clasifica como BLOB_AUTH_ERROR', async () => {
+  await assert.rejects(
+    issueTemporaryUploadToken(buildTemporaryBlobPath(SESSION_ID, 'CALZADO', 'caja', 'image/jpeg'), {
+      issuer: (async () => { throw new BlobAccessError(); }) as never
+    }),
+    (error: unknown) => error instanceof Error
+      && 'code' in error
+      && error.code === 'BLOB_AUTH_ERROR'
+      && error.cause instanceof BlobAccessError
   );
-  assert.equal(received?.oidcToken, 'oidc-test');
-  assert.equal(received?.storeId, 'store-test');
-  assert.equal('token' in (received ?? {}), false);
-  assert.deepEqual(received?.operations, ['put']);
+});
+
+test('un error temporal real del SDK se clasifica como BLOB_PROVIDER_ERROR', async () => {
+  await assert.rejects(
+    issueTemporaryUploadToken(buildTemporaryBlobPath(SESSION_ID, 'CALZADO', 'ticket', 'image/png'), {
+      issuer: (async () => { throw new BlobServiceNotAvailable(); }) as never
+    }),
+    (error: unknown) => error instanceof Error
+      && 'code' in error
+      && error.code === 'BLOB_PROVIDER_ERROR'
+      && error.cause instanceof BlobServiceNotAvailable
+  );
+});
+
+test('un pathname inválido se rechaza antes de invocar issueSignedToken', async () => {
+  let issuerCalled = false;
+  await assert.rejects(
+    issueTemporaryUploadToken(`altas-temporales/${SESSION_ID}/../ticket.jpg`, {
+      issuer: (async () => {
+        issuerCalled = true;
+        throw new Error('no debería ejecutarse');
+      }) as never
+    }),
+    /no es válida/
+  );
+  assert.equal(issuerCalled, false);
 });
 
 test('una foto lateral válida usa las mismas validaciones y se acepta', () => {

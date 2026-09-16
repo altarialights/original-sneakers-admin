@@ -3,9 +3,7 @@ import { ProductDetectionError } from './errors.ts';
 
 type DetectionSecret =
   | 'OPENAI_API_KEY'
-  | 'OPENAI_VISION_MODEL'
-  | 'BLOB_STORE_ID'
-  | 'VERCEL_OIDC_TOKEN';
+  | 'OPENAI_VISION_MODEL';
 
 type SecretReader = (name: DetectionSecret) => string | undefined;
 
@@ -42,46 +40,18 @@ export async function getOpenAIConfig(environment: NodeJS.ProcessEnv = process.e
   return { apiKey, model };
 }
 
-export interface BlobOidcOptions {
-  oidcToken: string;
-  storeId: string;
-}
-
 export interface BlobConfigurationPresence {
-  blobStoreIdConfigured: boolean;
-  oidcConfigured: boolean;
-  readWriteTokenConfigured: boolean;
+  storeIdConfigured: boolean;
+  oidcEnvVarVisible: boolean;
+  legacyReadWriteTokenVisible: boolean;
 }
 
-export async function getBlobConfigurationPresence(
-  environment: NodeJS.ProcessEnv = process.env,
-  fallback?: SecretReader
-): Promise<BlobConfigurationPresence> {
-  const [storeId, oidcToken] = await Promise.all([
-    readDetectionSecret('BLOB_STORE_ID', environment, fallback),
-    readDetectionSecret('VERCEL_OIDC_TOKEN', environment, fallback)
-  ]);
+export function getBlobConfigurationPresence(
+  environment: NodeJS.ProcessEnv = process.env
+): BlobConfigurationPresence {
   return {
-    blobStoreIdConfigured: Boolean(storeId),
-    oidcConfigured: Boolean(oidcToken),
-    readWriteTokenConfigured: Boolean(environment.BLOB_READ_WRITE_TOKEN?.trim())
+    storeIdConfigured: Boolean(environment.BLOB_STORE_ID?.trim()),
+    oidcEnvVarVisible: Boolean(environment.VERCEL_OIDC_TOKEN?.trim()),
+    legacyReadWriteTokenVisible: Boolean(environment.BLOB_READ_WRITE_TOKEN?.trim())
   };
-}
-
-export async function getBlobOidcOptions(
-  environment: NodeJS.ProcessEnv = process.env,
-  fallback?: SecretReader
-): Promise<BlobOidcOptions> {
-  const [oidcToken, storeId] = await Promise.all([
-    readDetectionSecret('VERCEL_OIDC_TOKEN', environment, fallback),
-    readDetectionSecret('BLOB_STORE_ID', environment, fallback)
-  ]);
-  if (!oidcToken || !storeId) {
-    throw new ProductDetectionError(
-      'El almacenamiento temporal no está configurado. En local, ejecuta: pnpm dlx vercel env pull .env.local',
-      'BLOB_CONFIG_ERROR',
-      503
-    );
-  }
-  return { oidcToken, storeId };
 }
