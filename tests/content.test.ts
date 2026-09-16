@@ -8,7 +8,7 @@ import { getProductDetail } from '../src/lib/inventory/queries.ts';
 import { uuidV7 } from '../src/lib/inventory/ids.ts';
 import { getContentImageResource, getProductContent, getPublicationProduct } from '../src/lib/content/queries.ts';
 import { decodeGeneratedImageAsset, generatePublicationImagesWithOpenAI, generatePublicationTextsWithOpenAI, IMAGE_GENERATION_CONCURRENCY } from '../src/lib/content/openai.ts';
-import { streamPrivateContentImage, uploadGeneratedContentImage } from '../src/lib/content/blob.ts';
+import { contentBlobAuthOptions, streamPrivateContentImage, uploadGeneratedContentImage } from '../src/lib/content/blob.ts';
 import { contentImageFilename, publicSizeFacts } from '../src/lib/content/formatters.ts';
 import { publicContentPayload } from '../src/lib/content/presentation.ts';
 import { saveContentReferenceRecord } from '../src/lib/content/mutations.ts';
@@ -246,15 +246,37 @@ test('valida ángulos por tipo y admite flujo real de ropa', () => usingDatabase
     generator: async (_product, request) => fakeImages(request),
     uploader: async () => { throw new Error('no debe subir'); }
   }), /no corresponde/);
+  await seedRequiredReferences(client, productId);
   const result = await generateAndSaveProductImages(productId, {
     quantity: 1, angles: ['frontal'], quality: 'ESTANDAR', mode: 'REPLACE'
   }, {
     database: client,
     generator: async (_product, request) => fakeImages(request),
     uploader: async (_id, image) => ({ ...image, url: 'https://blob.test/ropa.webp', pathname: 'contenido/ropa.webp', hash: 'c'.repeat(64) }),
+    referenceReader: async () => `data:image/webp;base64,${Buffer.from(webpBytes).toString('base64')}`,
     cleanup: async () => undefined
   });
   assert.equal(result.content.images[0].metadata.angle, 'frontal');
+}));
+
+test('ropa exige referencias frontal y trasera y limita la cantidad a seis', () => usingDatabase(async ({ client }) => {
+  const productId = await createTestProduct(client, 'ROPA');
+  let generatorCalls = 0;
+  const dependencies = {
+    database: client,
+    generator: async (_product: PublicationProduct, request: ImageGenerationRequest) => {
+      generatorCalls += 1;
+      return fakeImages(request);
+    },
+    uploader: async () => { throw new Error('no debe subir'); }
+  };
+  await assert.rejects(generateAndSaveProductImages(productId, {
+    quantity: 1, angles: ['frontal'], quality: 'ESTANDAR', mode: 'REPLACE'
+  }, dependencies), /fotografías frontal y trasera/);
+  await assert.rejects(generateAndSaveProductImages(productId, {
+    quantity: 7, angles: ['frontal'], quality: 'ESTANDAR', mode: 'REPLACE'
+  }, dependencies), /máximo 6 imágenes/);
+  assert.equal(generatorCalls, 0);
 }));
 
 test('producto inexistente devuelve un estado controlado', () => usingDatabase(async ({ client }) => {
@@ -268,7 +290,7 @@ test('OpenAI editorial traduce la calidad y genera una imagen por ángulo sin ll
   const calls: Array<Record<string, unknown>> = [];
   const fakeClient = {
     images: {
-      generate: async (body: Record<string, unknown>) => {
+      edit: async (body: Record<string, unknown>) => {
         calls.push(body);
         return { data: [{ b64_json: Buffer.from(webpBytes).toString('base64') }] };
       }
@@ -279,12 +301,17 @@ test('OpenAI editorial traduce la calidad y genera una imagen por ángulo sin ll
     angles: ['frontal', 'trasera'],
     quality: 'PREMIUM',
     mode: 'REPLACE'
-  }, [], { client: fakeClient, apiKey: 'test', model: 'test-image-model' });
+  }, [
+    { role: 'REFERENCIA_LATERAL', dataUrl: `data:image/webp;base64,${Buffer.from(webpBytes).toString('base64')}` },
+    { role: 'REFERENCIA_TRASERA', dataUrl: `data:image/webp;base64,${Buffer.from(webpBytes).toString('base64')}` }
+  ], { client: fakeClient, apiKey: 'test', model: 'test-image-model' });
   assert.equal(images.images.length, 2);
   assert.deepEqual(images.images.map((image) => image.angle), ['frontal', 'trasera']);
   assert.equal(images.failures.length, 0);
   assert.equal(calls[0].quality, 'high');
   assert.equal(calls[0].output_format, 'webp');
+  assert.match(String(calls[0].prompt), /imagen 1 es la vista FRONTAL real/);
+  assert.equal((calls[0].image as unknown[]).length, 2);
 }));
 
 test('OpenAI editorial usa el formato estructurado y genera la descripción completa de ropa', () => usingDatabase(async ({ client }) => {
@@ -673,6 +700,9 @@ test('la ruta dinámica usa biblioteca real y no ofrece publicación externa', a
   assert.match(page, /ClipboardItem/);
   assert.match(page, /\?download=1/);
   assert.match(page, /data-references-required/);
+  assert.match(page, /data-max-quantity/);
+  assert.match(page, /Parte delantera de la prenda/);
+  assert.match(page, /Entre 1 y \{maxImageQuantity\} imágenes/);
   assert.match(page, /Para generar imágenes fieles del producto/);
   assert.doesNotMatch(page, /window\.location\.reload\(\), 500/);
   assert.doesNotMatch(page, /Descripción corta|Descripción larga/);
@@ -723,4 +753,40 @@ test('lectura privada delega OIDC al SDK sin exigir la variable visible', async 
   assert.deepEqual(receivedOptions, { access: 'private' });
   assert.equal('oidcToken' in (receivedOptions ?? {}), false);
   assert.equal('token' in (receivedOptions ?? {}), false);
+});
+
+test('Blob usa el token local en desarrollo y delega OIDC en producción', () => {
+  assert.deepEqual(contentBlobAuthOptions(undefined, {
+    NODE_ENV: 'development',
+    VERCEL_OIDC_TOKEN: 'oidc-local-caducado',
+    BLOB_READ_WRITE_TOKEN: 'token-local'
+  }), { token: 'token-local' });
+  assert.deepEqual(contentBlobAuthOptions(undefined, {
+    NODE_ENV: 'production',
+    VERCEL_OIDC_TOKEN: 'oidc-runtime',
+    BLOB_READ_WRITE_TOKEN: 'token-legacy'
+  }), {});
+});
+
+test('el índice de contenido lista stock real en cards y abre la ficha funcional', async () => {
+  const page = await readFile(new URL('../src/pages/contenido/index.astro', import.meta.url), 'utf8');
+  const stockTable = await readFile(new URL('../src/components/stock/StockTable.astro', import.meta.url), 'utf8');
+  const mobileCard = await readFile(new URL('../src/components/stock/ProductMobileCard.astro', import.meta.url), 'utf8');
+
+  assert.match(page, /listProducts\(filters\)/);
+  assert.match(page, /getFilterOptions\(\)/);
+  assert.match(page, /<FilterBar/);
+  assert.match(page, /ProductThumbnail imageUrl=\{product\.imageUrl\}/);
+  assert.match(page, /Crear contenido/);
+  assert.match(page, /\/contenido\/\$\{encodeURIComponent\(product\.id\)\}/);
+  assert.match(page, /Astro\.redirect/);
+  assert.doesNotMatch(page, /mockProducts|ImageGenerationPanel|shopify|whatsapp|vinted/i);
+  assert.match(stockTable, /\/contenido\/\$\{encodeURIComponent\(product\.id\)\}/);
+  assert.match(mobileCard, /\/contenido\/\$\{encodeURIComponent\(product\.id\)\}/);
+  assert.match(stockTable, /Preparar contenido/);
+  assert.match(mobileCard, /Preparar contenido/);
+  assert.doesNotMatch(stockTable, /Crear imágenes/);
+  assert.doesNotMatch(mobileCard, /Crear imágenes/);
+  assert.doesNotMatch(stockTable, /\/contenido\?producto=/);
+  assert.doesNotMatch(mobileCard, /\/contenido\?producto=/);
 });

@@ -1,8 +1,8 @@
 ---
 import Icon from '../ui/Icon.astro';
 import type { InventoryFilterOptions, InventoryListFilters } from '../../lib/inventory/types.ts';
-interface Props { options: InventoryFilterOptions; current: InventoryListFilters; }
-const { options, current } = Astro.props;
+interface Props { options: InventoryFilterOptions; current: InventoryListFilters; clearHref?: string; }
+const { options, current, clearHref = '/stock' } = Astro.props;
 const brands = options.brands.map((value) => { const [key, label] = value.split('\t'); return { key, label }; });
 const fields = [
   { name: 'marca', label: 'Marca', value: current.brand ?? '', options: [{ value: '', label: 'Todas' }, ...brands.map((brand) => ({ value: brand.key, label: brand.label }))] },
@@ -18,7 +18,7 @@ const fields = [
     {current.search && <input type="hidden" name="q" value={current.search} />}
     {fields.map((field) => <label><span class="mb-1.5 block text-xs font-semibold text-slate-600">{field.label}</span><select name={field.name} class="min-h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-600 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10">{field.options.map((option) => <option value={option.value} selected={option.value === field.value}>{option.label}</option>)}</select></label>)}
     <button type="submit" class="min-h-11 rounded-xl bg-slate-950 px-4 text-sm font-semibold text-white">Aplicar</button>
-    <a href="/stock" class="grid min-h-11 place-items-center rounded-xl px-3 text-sm font-medium text-slate-500 hover:bg-slate-100">Limpiar</a>
+    <a href={clearHref} class="grid min-h-11 place-items-center rounded-xl px-3 text-sm font-medium text-slate-500 hover:bg-slate-100">Limpiar</a>
   </form>
   <button type="button" data-filter-open class="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 md:hidden"><Icon name="filter" class="size-[18px]" />Filtrar productos</button>
   <div id="filter-drawer" class="fixed inset-0 z-50 hidden" aria-hidden="true">
@@ -28,14 +28,16 @@ const fields = [
       <form method="get" class="mt-6">
         {current.search && <input type="hidden" name="q" value={current.search} />}
         <div class="grid grid-cols-2 gap-4">{fields.map((field, index) => <label class:list={[index === 4 ? 'col-span-2' : '']}><span class="mb-1.5 block text-sm font-medium text-slate-700">{field.label}</span><select name={field.name} class="min-h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm">{field.options.map((option) => <option value={option.value} selected={option.value === field.value}>{option.label}</option>)}</select></label>)}</div>
-        <div class="mt-7 grid grid-cols-2 gap-2"><a href="/stock" class="grid min-h-12 place-items-center rounded-xl border border-slate-200 text-sm font-semibold">Limpiar</a><button type="submit" class="min-h-12 rounded-xl bg-slate-950 text-sm font-semibold text-white">Ver productos</button></div>
+        <div class="mt-7 grid grid-cols-2 gap-2"><a href={clearHref} class="grid min-h-12 place-items-center rounded-xl border border-slate-200 text-sm font-semibold">Limpiar</a><button type="submit" class="min-h-12 rounded-xl bg-slate-950 text-sm font-semibold text-white">Ver productos</button></div>
       </form>
     </section>
   </div>
 </div>
 <script>
+  document.addEventListener('astro:page-load', () => {
   const drawer = document.querySelector<HTMLElement>('#filter-drawer');
   const setOpen = (open: boolean) => { drawer?.classList.toggle('hidden', !open); drawer?.setAttribute('aria-hidden', String(!open)); document.body.classList.toggle('overflow-hidden', open); };
   document.querySelectorAll('[data-filter-open]').forEach((button) => button.addEventListener('click', () => setOpen(true)));
   document.querySelectorAll('[data-filter-close]').forEach((button) => button.addEventListener('click', () => setOpen(false)));
+  });
 </script>

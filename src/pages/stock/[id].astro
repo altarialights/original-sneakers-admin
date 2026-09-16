@@ -85,7 +85,7 @@ const ageLabels = { BEBE: 'Bebé', INFANTIL: 'Infantil', ADULTO: 'Adulto', DESCO
 
     <Modal id="archive-product" title="Dar de baja producto" description="El producto conservará todo su historial."><div class="rounded-xl bg-rose-50 p-3 text-sm font-semibold text-rose-800">{product.name}</div>{product.stock > 0 && <p class="mt-3 text-sm text-slate-600">Este producto todavía tiene {product.stock} unidades. Puedes cancelar o darlo de baja igualmente.</p>}<p data-archive-error class="mt-3 hidden text-sm font-medium text-rose-700"></p><div class="mt-6 grid grid-cols-2 gap-2"><button type="button" data-dialog-close class="min-h-12 rounded-xl border border-slate-200 font-semibold">Cancelar</button><button type="button" data-archive-save class="min-h-12 rounded-xl bg-rose-600 font-semibold text-white">Dar de baja</button></div></Modal>
 
-    <script is:inline define:vars={{ productId: product.id, productStock: product.stock }}>
+    <script is:inline data-astro-rerun define:vars={{ productId: product.id, productStock: product.stock }}>
       const galleryImages = [...document.querySelectorAll('[data-gallery-thumb]')].map((button) => button.dataset.imageUrl).filter(Boolean);
       const mainImage = document.querySelector('[data-gallery-main]');
       const currentDownload = document.querySelector('[data-download-current]');

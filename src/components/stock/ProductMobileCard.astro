@@ -14,7 +14,7 @@ const { product } = Astro.props;
     <ActionMenu label={`Acciones para ${product.name}`}>
       <a href={`/stock/${product.id}`} class="block min-h-11 rounded-lg px-3 py-3 font-medium hover:bg-slate-50">Ver / editar</a>
       <button type="button" data-stock-open data-product={product.name} data-variant-id={product.variants[0]?.id} data-location-id={product.variants[0]?.locationId} data-size={product.sizes[0]} data-quantity={product.variants[0]?.quantity ?? 0} class="block min-h-11 w-full rounded-lg px-3 text-left hover:bg-slate-50">Ajustar stock</button>
-      <a href={`/contenido?producto=${product.id}&panel=imagenes`} class="block min-h-11 rounded-lg px-3 py-3 hover:bg-slate-50">Crear imágenes</a>
+      <a href={`/contenido/${encodeURIComponent(product.id)}`} class="block min-h-11 rounded-lg px-3 py-3 hover:bg-slate-50">Preparar contenido</a>
       <button type="button" data-archive-open data-product-id={product.id} data-product={product.name} data-stock={product.stock} class="block min-h-11 w-full rounded-lg px-3 text-left text-rose-700 hover:bg-rose-50">Dar de baja</button>
     </ActionMenu>
   </div>

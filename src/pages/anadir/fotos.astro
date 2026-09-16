@@ -166,6 +166,8 @@ export const prerender = false;
     import { PRODUCT_IMAGE_PATH_SEGMENTS } from '../../lib/product-detection/config.ts';
     import { generationReferenceState, type ContentChoice } from '../../lib/product-detection/generation-flow.ts';
 
+    document.addEventListener('astro:page-load', () => {
+    if (!document.querySelector('[data-step="kind"]')) return;
     type ProductKind = 'CALZADO' | 'ROPA';
     type SourceDataKind = 'caja' | 'ticket' | 'etiqueta' | 'etiquetaRopa' | 'prendaCompleta';
     type GenerationReferenceKind = 'referenciaLateral' | 'referenciaFrontal' | 'referenciaTrasera';
@@ -491,7 +493,7 @@ export const prerender = false;
       emptyActions.classList.toggle('hidden', showExisting);
       emptyActions.classList.toggle('flex', !showExisting);
       const viewImages = document.querySelector<HTMLAnchorElement>('[data-view-images]')!;
-      viewImages.href = productId ? `/contenido?producto=${encodeURIComponent(productId)}` : '/contenido';
+      viewImages.href = productId ? `/contenido/${encodeURIComponent(productId)}` : '/contenido';
     };
 
     const renderResult = (result: DetectionResponse) => {
@@ -655,5 +657,6 @@ export const prerender = false;
       window.location.assign('/anadir');
     };
     document.querySelectorAll('[data-cancel]').forEach((button) => button.addEventListener('click', () => void cancelSession()));
+    });
   </script>
 </AdminLayout>

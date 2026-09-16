@@ -26,7 +26,7 @@ export const ANGLE_LABELS: Record<string, string> = {
   'detalle-tejido-manga-estampado': 'detalle de tejido, manga o estampado'
 };
 
-type ContentSecret = 'OPENAI_API_KEY' | 'OPENAI_CONTENT_TEXT_MODEL' | 'OPENAI_CONTENT_IMAGE_MODEL' | 'VERCEL_OIDC_TOKEN' | 'BLOB_STORE_ID';
+type ContentSecret = 'OPENAI_API_KEY' | 'OPENAI_CONTENT_TEXT_MODEL' | 'OPENAI_CONTENT_IMAGE_MODEL' | 'VERCEL_OIDC_TOKEN' | 'BLOB_STORE_ID' | 'BLOB_READ_WRITE_TOKEN';
 
 async function astroSecret(name: ContentSecret): Promise<string | undefined> {
   try {
@@ -35,6 +35,11 @@ async function astroSecret(name: ContentSecret): Promise<string | undefined> {
   } catch {
     return undefined;
   }
+}
+
+export async function getLocalContentBlobToken(environment: NodeJS.ProcessEnv = process.env): Promise<string | undefined> {
+  if (environment.NODE_ENV === 'production') return undefined;
+  return environment.BLOB_READ_WRITE_TOKEN?.trim() || await astroSecret('BLOB_READ_WRITE_TOKEN');
 }
 
 export async function getContentBlobConfig(environment: NodeJS.ProcessEnv = process.env): Promise<{

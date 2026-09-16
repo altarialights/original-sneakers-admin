@@ -5,7 +5,7 @@ import { ContentError } from './errors.ts';
 import { archiveContentReferenceRecord, saveContentReferenceRecord, saveGeneratedImageRecord, savePublicationTexts } from './mutations.ts';
 import { generatePublicationImagesWithOpenAI, generatePublicationTextsWithOpenAI } from './openai.ts';
 import { getProductContent, getPublicationProduct } from './queries.ts';
-import { assertAnglesForProduct, imageGenerationRequestSchema, publicationTextsSchema } from './schemas.ts';
+import { allowedAnglesFor, assertAnglesForProduct, imageGenerationRequestSchema, publicationTextsSchema } from './schemas.ts';
 import { CONTENT_REFERENCE_ROLES, PUBLICATION_TEXT_FIELDS } from './types.ts';
 import type {
   GeneratedImage,
@@ -57,11 +57,13 @@ async function generationReferences(
   library: ProductContentLibrary | null,
   reader: (url: string) => Promise<string>
 ): Promise<ImageReferenceInput[]> {
-  if (product.type !== 'CALZADO') return [];
   const lateral = library?.references.find((asset) => asset.metadata.role === 'REFERENCIA_LATERAL');
   const rear = library?.references.find((asset) => asset.metadata.role === 'REFERENCIA_TRASERA');
   if (!lateral || !rear) {
-    throw new ContentError('No podemos generar imágenes de calzado sin las referencias visuales lateral y trasera.', 'REFERENCIAS_REQUERIDAS', 422);
+    const description = product.type === 'ROPA'
+      ? 'las fotografías frontal y trasera de la prenda'
+      : 'las referencias visuales lateral y trasera';
+    throw new ContentError(`No podemos generar imágenes sin ${description}.`, 'REFERENCIAS_REQUERIDAS', 422);
   }
   const references: ImageReferenceInput[] = [];
   for (const asset of [lateral, rear]) {
@@ -90,6 +92,10 @@ export async function generateAndSaveProductImages(
   const request = imageGenerationRequestSchema.parse(requestInput);
   const product = await requireSupportedProduct(productId, dependencies.database);
   assertAnglesForProduct(product.type, request.angles);
+  const maximumQuantity = allowedAnglesFor(product.type).length;
+  if (request.quantity > maximumQuantity) {
+    throw new ContentError(`Puedes generar como máximo ${maximumQuantity} imágenes para este tipo de producto.`, 'CANTIDAD_IMAGENES', 422);
+  }
   const before = await getProductContent(productId, dependencies.database);
   const references = await generationReferences(product, before, dependencies.referenceReader ?? readContentImageDataUrl);
   const generatedResult = await (dependencies.generator ?? generatePublicationImagesWithOpenAI)(product, request, references);
@@ -191,8 +197,7 @@ export async function saveProductContentReference(
 ): Promise<ProductContentLibrary> {
   const productId = assertProductId(productIdInput);
   const role = z.enum(CONTENT_REFERENCE_ROLES).parse(roleInput);
-  const product = await requireSupportedProduct(productId, dependencies.database);
-  if (product.type !== 'CALZADO') throw new ContentError('Las referencias lateral y trasera solo se solicitan para calzado.', 'REFERENCIA_TIPO', 422);
+  await requireSupportedProduct(productId, dependencies.database);
   const validated = await validateContentReferenceFile(file);
   const stored = await (dependencies.uploader ?? uploadContentReference)(productId, role, validated.bytes, validated.mimeType, validated.originalName);
   let replacedUris: string[];
@@ -220,8 +225,7 @@ export async function removeProductContentReference(
 ): Promise<ProductContentLibrary> {
   const productId = assertProductId(productIdInput);
   const role = z.enum(CONTENT_REFERENCE_ROLES).parse(roleInput);
-  const product = await requireSupportedProduct(productId, dependencies.database);
-  if (product.type !== 'CALZADO') throw new ContentError('Este producto no utiliza referencias de calzado.', 'REFERENCIA_TIPO', 422);
+  await requireSupportedProduct(productId, dependencies.database);
   const uris = await archiveContentReferenceRecord(productId, role, dependencies.database);
   try {
     await (dependencies.cleanup ?? deleteGeneratedContentImages)(uris);

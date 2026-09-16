@@ -78,6 +78,13 @@ export default defineConfig({
                 access: "secret",
                 min: 1,
             }),
+
+            BLOB_READ_WRITE_TOKEN: envField.string({
+                context: "server",
+                access: "secret",
+                optional: true,
+                min: 1,
+            }),
         },
     },
 

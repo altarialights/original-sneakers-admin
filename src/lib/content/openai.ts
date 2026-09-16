@@ -222,8 +222,12 @@ export async function generatePublicationTextsWithOpenAI(
 
 function imagePrompt(product: PublicationProduct, angle: string, references: ImageReferenceInput[]): string {
   const kind = product.type === 'ROPA' ? 'prenda' : 'calzado';
+  const firstReference = product.type === 'ROPA' ? 'vista FRONTAL' : 'vista LATERAL';
+  const fidelityDetails = product.type === 'ROPA'
+    ? 'corte, color, logos, estampados, cuello, mangas, tejido aparente y detalles específicos visibles'
+    : 'silueta, colorway, logos, materiales aparentes, forma de la mediasuela y detalles específicos visibles';
   const referenceInstructions = references.length === 0 ? '' : `
-Referencias visuales obligatorias: la imagen 1 es la vista LATERAL real y la imagen 2 es la vista TRASERA real del mismo producto. Mantén exactamente su silueta, colorway, logos, materiales aparentes, forma de la mediasuela y detalles específicos visibles del modelo. No sustituyas ni reinterpretes el producto por otro modelo parecido.`;
+Referencias visuales obligatorias: la imagen 1 es la ${firstReference} real y la imagen 2 es la vista TRASERA real del mismo producto. Mantén exactamente su ${fidelityDetails}. No sustituyas ni reinterpretes el producto por otro modelo parecido.`;
   return `Fotografía ecommerce premium, realista y consistente de ${kind}.
 Producto: ${product.brand} ${product.model}; referencia ${product.reference}; color ${product.colorway ?? 'no especificado'}.
 Vista solicitada: ${ANGLE_LABELS[angle] ?? angle}.${referenceInstructions}
@@ -244,8 +248,11 @@ function hasReferenceSignature(bytes: Uint8Array, mimeType: string): boolean {
 
 function prepareOpenAIReferences(product: PublicationProduct, references: ImageReferenceInput[]): Array<{ bytes: Buffer; mimeType: string; role: ImageReferenceInput['role'] }> {
   const byRole = new Map(references.map((reference) => [reference.role, reference]));
-  if (product.type === 'CALZADO' && (!byRole.has('REFERENCIA_LATERAL') || !byRole.has('REFERENCIA_TRASERA'))) {
-    throw new ContentError('No podemos generar imágenes de calzado sin las referencias visuales lateral y trasera.', 'REFERENCIAS_REQUERIDAS', 422);
+  if (!byRole.has('REFERENCIA_LATERAL') || !byRole.has('REFERENCIA_TRASERA')) {
+    const description = product.type === 'ROPA'
+      ? 'las fotografías frontal y trasera de la prenda'
+      : 'las referencias visuales lateral y trasera';
+    throw new ContentError(`No podemos generar imágenes sin ${description}.`, 'REFERENCIAS_REQUERIDAS', 422);
   }
   return (['REFERENCIA_LATERAL', 'REFERENCIA_TRASERA'] as const).flatMap((role) => {
     const reference = byRole.get(role);
