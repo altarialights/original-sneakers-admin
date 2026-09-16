@@ -701,3 +701,26 @@ test('la ficha de stock permite seleccionar y descargar imágenes y muestra los 
   assert.match(page, /content\.texts\.tituloComercial/);
   assert.match(page, /content\.texts\.descripcionCompleta/);
 });
+
+test('lectura privada delega OIDC al SDK sin exigir la variable visible', async () => {
+  let receivedOptions: Record<string, unknown> | undefined;
+  const getter = (async (_pathname: string, options: Record<string, unknown>) => {
+    receivedOptions = options;
+    return {
+      statusCode: 200,
+      stream: new Blob([webpBytes], { type: 'image/webp' }).stream(),
+      headers: new Headers(),
+      blob: {
+        url: '', downloadUrl: '', pathname: '', contentDisposition: 'inline', cacheControl: '', uploadedAt: new Date(),
+        etag: 'test', contentType: 'image/webp', size: webpBytes.byteLength
+      }
+    };
+  }) as unknown as typeof import('@vercel/blob').get;
+
+  const response = await streamPrivateContentImage('contenido-productos/test.webp', undefined, { getter });
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(receivedOptions, { access: 'private' });
+  assert.equal('oidcToken' in (receivedOptions ?? {}), false);
+  assert.equal('token' in (receivedOptions ?? {}), false);
+});

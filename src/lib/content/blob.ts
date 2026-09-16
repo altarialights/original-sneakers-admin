@@ -12,13 +12,22 @@ import {
   put
 } from '@vercel/blob';
 import { uuidV7 } from '../inventory/ids.ts';
-import { getContentBlobConfig } from './config.ts';
 import { ContentError } from './errors.ts';
 import type { ContentReferenceRole, GeneratedImage, StoredContentReference, StoredGeneratedImage } from './types.ts';
 
 const MAX_REFERENCE_BYTES = 15 * 1024 * 1024;
 
-type ContentBlobAuth = Awaited<ReturnType<typeof getContentBlobConfig>>;
+type ContentBlobAuth = {
+  oidcToken?: string;
+  storeId?: string;
+  token?: string;
+};
+
+function blobAuthOptions(auth?: ContentBlobAuth): ContentBlobAuth {
+  // Sin opciones explícitas, el SDK resuelve el OIDC del runtime y BLOB_STORE_ID.
+  // Las opciones manuales se conservan únicamente para tests y desarrollo local.
+  return auth ?? {};
+}
 
 function blobDiagnostic(error: unknown): string {
   if (!error || typeof error !== 'object') return 'name=Unknown';
@@ -52,7 +61,7 @@ export async function uploadGeneratedContentImage(
   const startedAt = performance.now();
   console.info(`[content-images] blob:upload:start angle=${image.angle} bytes=${image.bytes.byteLength} mime=${image.mimeType}`);
   try {
-    const auth = options.auth ?? await getContentBlobConfig();
+    const auth = blobAuthOptions(options.auth);
     const stored = await (options.uploader ?? put)(pathname, Buffer.from(image.bytes), {
       ...auth,
       access: 'private',
@@ -95,7 +104,7 @@ export async function uploadContentReference(
   const pathname = `contenido-productos/${productId}/referencias/${rolePath}-${uuidV7()}.${extension}`;
   try {
     const stored = await (options.uploader ?? put)(pathname, Buffer.from(bytes), {
-      ...(options.auth ?? await getContentBlobConfig()),
+      ...blobAuthOptions(options.auth),
       access: 'private',
       addRandomSuffix: false,
       allowOverwrite: false,
@@ -118,7 +127,7 @@ export async function uploadContentReference(
 export async function deleteGeneratedContentImages(pathnames: string[]): Promise<void> {
   if (pathnames.length === 0) return;
   try {
-    await del(pathnames, { ...await getContentBlobConfig() });
+    await del(pathnames, blobAuthOptions());
   } catch {
     console.warn(`[content-images] blob:cleanup-failed count=${pathnames.length}`);
   }
@@ -130,7 +139,7 @@ export async function streamPrivateContentImage(
   options: { getter?: typeof get; auth?: ContentBlobAuth } = {}
 ): Promise<Response> {
   try {
-    const result = await (options.getter ?? get)(urlOrPathname, { ...(options.auth ?? await getContentBlobConfig()), access: 'private' });
+    const result = await (options.getter ?? get)(urlOrPathname, { ...blobAuthOptions(options.auth), access: 'private' });
     if (!result || result.statusCode !== 200) throw new ContentError('La imagen no está disponible.', 'IMAGEN_NO_ENCONTRADA', 404);
     const headers: Record<string, string> = {
         'content-type': result.blob.contentType,
@@ -150,7 +159,7 @@ export async function streamPrivateContentImage(
 export async function readContentImageDataUrl(urlOrPathname: string): Promise<string> {
   let response: Response;
   try {
-    const result = await get(urlOrPathname, { ...await getContentBlobConfig(), access: 'private' });
+    const result = await get(urlOrPathname, { ...blobAuthOptions(), access: 'private' });
     if (!result || result.statusCode !== 200) throw new Error('not-found');
     if (result.blob.size > MAX_REFERENCE_BYTES) throw new ContentError('Una imagen de referencia es demasiado grande.', 'REFERENCIA_GRANDE');
     response = new Response(result.stream, { headers: { 'content-type': result.blob.contentType } });
